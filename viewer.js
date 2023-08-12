@@ -651,7 +651,7 @@ const handleStreamPaused = async () => {
 };
 const handleStreamContinue = () => {
   document.getElementById("sendButton").disabled = false;
-  document.getElementById("textBox").disabled = false;
+  // document.getElementById("textBox").disabled = false;
   document.getElementById("requestButton").disabled = false;
   playing = true;
   if (document.getElementById("statusImage")) {
