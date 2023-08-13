@@ -107,10 +107,10 @@ player.addEventListener(PlayerState.ENDED, function () {
   paused = false;
   //   document.getElementById("video-player").remove();
   document.getElementById("sendButton").disabled = true;
-  document.getElementById("textBox").disabled = true;
+  // document.getElementById("textBox").disabled = true;
   document.getElementById("requestButton").disabled = true;
   console.log("Player State - ENDED");
-  document.getElementById("streamStatus").innerText = "";
+  // document.getElementById("streamStatus").innerText = "";
   insertImage("./assets/offline.jpeg");
   playing = false;
 });
@@ -477,7 +477,7 @@ const join_channel = async () => {
       }
       if (data.Type == "EVENT" && data.EventName == "stream-start") {
         paused = false;
-        document.getElementById("messages").innerHTML = "";
+        // document.getElementById("messages").innerHTML = "";
         // document.getElementById("streamTags").innerHTML = "Stream Tags:";
         // document.getElementById
         renderGoals();
@@ -502,8 +502,8 @@ const join_channel = async () => {
         data.EventName == "stream-start-after-private"
       ) {
         paused = false;
-        document.getElementById("messages").innerHTML = "";
-        document.getElementById("streamTags").innerHTML = "Stream Tags:";
+        // document.getElementById("messages").innerHTML = "";
+        // document.getElementById("streamTags").innerHTML = "Stream Tags:";
 
         renderGoals();
         retyInsertStreamPlayback();
@@ -629,10 +629,10 @@ const handleStreamInPrivateSession = async () => {
   document.getElementById("loader").style.display = "none";
   console.log("stream in private session");
   document.getElementById("sendButton").disabled = true;
-  document.getElementById("textBox").disabled = true;
-  document.getElementById("streamStatus").innerText = "";
+  // document.getElementById("textBox").disabled = true;
+  // document.getElementById("streamStatus").innerText = "";
   insertImage("./assets/private.png");
-  document.getElementById("viewPrivate").disabled = false;
+  // document.getElementById("viewPrivate").disabled = false;
 
   playing = false;
   paused = true;
@@ -770,8 +770,8 @@ const send_private_stream_request = async () => {
     response,
   });
   // document.getElementById("requestButton").disabled = true;
-  const modalContent = document.getElementsByClassName("modal-content-full")[0];
-  modalContent.innerHTML = `<div style="display:flex;justify-content:center;min-height:80px;align-items:center;"><h2>Request Sent! Waiting For Streamer</h2></div>`;
+  // const modalContent = document.getElementsByClassName("modal-content-full")[0];
+  // modalContent.innerHTML = `<div style="display:flex;justify-content:center;min-height:80px;align-items:center;"><h2>Request Sent! Waiting For Streamer</h2></div>`;
   // document.getElementById("requestButton").innerText = "Request Sent!";
 };
 const createMessage = text => {
