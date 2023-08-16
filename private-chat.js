@@ -156,14 +156,28 @@ const privateChatSocketListener = () => {
     console.log({ data });
     if (data.Type == "MESSAGE") {
       const newElement = document.createElement("div");
-      newElement.style.padding = "10px";
-      newElement.style.border = "1px solid black";
-      newElement.style.borderRadius = "10px";
-      newElement.style.margin = "10px";
-      newElement.innerHTML = `${data.Sender.Attributes.displayName}: ${data.Content}`;
-      const messagesContainer = document.getElementById("privateMessages");
-      messagesContainer.append(newElement);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      newElement.classList.add("message");
+      newElement.classList.add("message-left");
+      newElement.innerHTML = `
+  <div class="img-container">
+    <img
+      src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHByb2ZpbGUlMjBpbWFnZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60"
+      alt=""
+    />
+  </div>
+  <div class="text-container">
+    <div class="message-info">
+      <span class="name">Sri Veronica</span>
+      <span class="time">3:50 PM</span>
+    </div>
+    <p class="text">
+     ${data.Content}
+    </p>
+  </div>
+  `;
+      document
+        .getElementsByClassName("private-message-container")[0]
+        .prepend(newElement);
     }
     if (data.Type == "EVENT" && data.EventName == "delete-channel") {
       handlePrivateStreamEnd(false);
@@ -194,6 +208,7 @@ const privateChatSocketListener = () => {
 };
 const sendPrivateFunction = () => {
   const message = document.getElementById("privateTextBox").value;
+  console.log({ message });
   if (message == "") return;
   document.getElementById("privateTextBox").value = "";
   send_message(privateConnection, message);
@@ -241,6 +256,13 @@ const handlePrivateStreamError = err => {
   }, 2000);
 };
 const handlePrivateStreamPlaying = () => {
+  document.getElementById("inputContainer").style.display = "none";
+  document.getElementById("privateInputContainer").style.display = "flex";
+  private_view_active = true;
+  document.getElementById("messages").style.display = "none";
+  console.log("Private Stream Playing");
+  document.getElementById("privateMessages").style.display = "flex";
+
   if (!document.getElementById("private-banner")) {
     document.getElementById("player-controls").innerHTML += `
       <div id="private-banner" class="player-controls__inner" style="
@@ -295,6 +317,9 @@ const updateRemainingCredits = () => {
 // };
 const handlePrivateStreamEnd = async (self = true) => {
   // refundRemainingTime();
+  private_view_active = false;
+  document.getElementById("inputContainer").style.display = "flex";
+  document.getElementById("privateInputContainer").style.display = "none";
   insertImage("./assets/private.png");
   if (document.getElementById("private-banner")) {
     document.getElementById("private-banner").remove();
@@ -323,6 +348,8 @@ const handlePrivateStreamEnd = async (self = true) => {
     IVSPlayer.PlayerState.PLAYING,
     handlePrivateStreamPlaying
   );
+  document.getElementById("messages").style.display = "flex";
+  document.getElementById("privateMessages").style.display = "none";
   console.log("Private Player Unmounted");
   // privatePlayer.delete();
   document.getElementById("requestButton-container").innerHTML = `

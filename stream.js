@@ -350,6 +350,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const chatboxTabContainer = document.querySelector(".tab-content-container");
   const chatboxTabContents = document.querySelectorAll(".chatbox-tab");
   const messageContainer = document.querySelector(".message-container");
+  const privateMessageContainer = document.querySelector(
+    "private-message-container"
+  );
   const inputContainer = document.querySelector(".input-container");
 
   function hideAllChatboxTabs() {
@@ -363,14 +366,30 @@ document.addEventListener("DOMContentLoaded", function () {
     button.addEventListener("click", () => {
       chatboxTabContainer.style.display = "block";
       messageContainer.style.display = "none";
-
+      if (document.querySelector(".private-message-container")) {
+        document.querySelector(".private-message-container").style.display =
+          "none";
+      }
       hideAllChatboxTabs();
       currentButtonId = button.id;
+      if (button.id === "public") {
+        if (private_view_active) {
+          chatboxTabContainer.style.display = "none";
+
+          document.querySelector(".private-message-container").style.display =
+            "flex";
+        } else {
+          chatboxTabContainer.style.display = "none";
+
+          messageContainer.style.display = "flex";
+        }
+
+        return;
+      }
       currentTab = document.getElementById(`${button.id}-tab`);
       currentTab.classList.add("active");
 
       if (window.innerWidth <= 1000) {
-        showTab("chat");
         chatboxTabContainer.scrollIntoView({ behavior: "smooth" });
       }
     });
@@ -381,12 +400,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     closeBtn.addEventListener("click", () => {
       chatboxTabContainer.style.display = "none";
-      messageContainer.style.display = "flex";
+      if (private_view_active) {
+        document.querySelector(".private-message-container").style.display =
+          "flex";
+      } else {
+        messageContainer.style.display = "flex";
+      }
+      // messageContainer.style.display = "flex";
     });
   });
 
   inputContainer.addEventListener("click", () => {
-    chatboxTabContainer.style.display = "none";
-    messageContainer.style.display = "flex";
+    // chatboxTabContainer.style.display = "none";
+    // messageContainer.style.display = "flex";
   });
 });
