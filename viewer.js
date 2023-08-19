@@ -29,6 +29,7 @@ let private_seconds_viewed = 0;
 let private_cost_deducted = 0;
 let private_view_active = false;
 let roomRules = "";
+let updateViewerCountInterval;
 player.addEventListener(PlayerEventType.AUDIO_BLOCKED, function () {
   setBtnMute();
 });
@@ -84,6 +85,25 @@ player.addEventListener(PlayerState.IDLE, function () {
 });
 
 player.addEventListener(PlayerState.PLAYING, function () {
+  HideViewShowRequest();
+  clearInterval(updateViewerCountInterval);
+  updateViewerCountInterval = setInterval(() => {
+    get_stream_information(region, secretAccessKey, secretAccessId, streamArn)
+      .then(response => {
+        // console.log({ ViewerCount: response.stream.viewerCount });
+        document.getElementsByClassName(
+          "viewers-count"
+        )[0].innerHTML = `${response.stream.viewerCount} watching`;
+        // console.log({ "Stream Health": response.stream.health });
+        // console.log({ state: response.stream.state });
+      })
+      .catch(err => {
+        console.log({ err });
+        document.getElementById(
+          "viewer-count"
+        ).innerHTML = `<p>Viewer Count (EXPERIMENTAL): 0</p>`;
+      });
+  }, 5000);
   playing = true;
   document.getElementById("overlay").style.backgroundColor = "transparent";
   document.getElementById("loader").style.display = "none";
@@ -108,6 +128,8 @@ player.addEventListener(PlayerState.PLAYING, function () {
   // document.getElementById("streamStatus").innerText = "Stream Status: Active";
 });
 player.addEventListener(PlayerState.ENDED, function () {
+  clearInterval(updateViewerCountInterval);
+  HideViewShowRequest();
   document.getElementById("loader").style.display = "none";
 
   paused = false;
@@ -122,6 +144,8 @@ player.addEventListener(PlayerState.ENDED, function () {
 });
 player.addEventListener(PlayerEventType.ERROR, async function (err) {
   const vplayer = document.getElementById("video-player");
+  clearInterval(updateViewerCountInterval);
+
   //   if (typeof vplayer != "undefined" && vplayer != null) {
   //   }
   paused = false;
@@ -238,6 +262,7 @@ const handleStreamEnd = () => {
   if (paused) {
     document.getElementById("sendButton").disabled = true;
     document.getElementById("textBox").disabled = true;
+    HideViewShowRequest();
     document.getElementById("requestButton").disabled = true;
     console.log("Player State - ENDED");
     document.getElementById("streamStatus").innerText = "";
@@ -323,8 +348,10 @@ const join_channel = async () => {
   private_stream_cost_view_total = parseFloat(roomDetails.tags["private-cost"]);
   document.getElementById("private-stream-request-text").innerHTML = `
   Available Credits: <b>${ivs_credits}</b><br>
-  Price Per 30 Seconds: <b>${private_stream_cost_per_second}</b> Credits<br>
-`;
+  Price Per 30 Seconds: <b>${private_stream_cost_per_second}</b> Credits<br>`;
+  document.getElementsByClassName(
+    "token-container"
+  )[0].innerText = `${ivs_credits} Tokens Credit | ${private_stream_cost_per_second} Tokens / 30sec`;
   console.log({ streamArn });
   try {
     const privateStreamInfo = await get_stream_information(
@@ -333,16 +360,19 @@ const join_channel = async () => {
       secretAccessId,
       roomDetails.tags.privateStreamArn
     );
+    console.log({ privateStreamInfo });
     await insertStreamPlayback();
     if (roomDetails.tags.status == "private") {
       handleStreamInPrivateSession();
-      document.getElementById("viewPrivate").disabled = false;
+      HideRequestShowView();
+      // document.getElementById("viewPrivate").disabled = false;
       paused = true;
     }
     if (roomDetails.tags.status == "paused") {
       handleStreamPaused();
       paused = true;
     }
+
     await renderGoals();
 
     const messages_list = await db_scan(
@@ -404,7 +434,6 @@ const join_channel = async () => {
       playing = false;
     }
   }
-
   // ----- DANGER ZONE -----
   const { id: channelIdTemp } = roomDetails;
   const userIdTemp = Math.floor(Math.random() * 1000000000).toString();
@@ -432,7 +461,6 @@ const join_channel = async () => {
     "<h4 style='margin:0;'>Room Rules</h4>";
   document.getElementById("room-rules").innerHTML = roomRules;
   //   await renderGoals();
-
   const { connection, chatClientToken, userId } = await open_channel(
     channel_arn,
     userChatName,
@@ -480,6 +508,10 @@ const join_channel = async () => {
       }
       if (data.Type == "EVENT" && data.EventName == "invite-declined") {
         handleChatInviteDecline(data);
+      }
+      if (data.Type == "EVENT" && data.EventName == "channel-name-update") {
+        document.getElementsByClassName("stream-title")[0].innerText =
+          data.Attributes["name"];
       }
       if (data.Type == "EVENT" && data.EventName == "stream-start") {
         paused = false;
@@ -630,8 +662,20 @@ const renderGoals = async () => {
     // }
   }
 };
+const HideRequestShowView = () => {
+  document.getElementById("private-stream-view-text").innerHTML = `
+  Available Credits: <b>${ivs_credits}</b><br>
+  Price Per 30 Seconds: <b>${private_stream_cost_per_second}</b> Credits<br>`;
+  document.getElementById("private-stream-request").style.display = "none";
+  document.getElementById("private-stream-view").style.display = "block";
+};
+const HideViewShowRequest = () => {
+  document.getElementById("private-stream-request").style.display = "block";
+  document.getElementById("private-stream-view").style.display = "none";
+};
 const handleStreamInPrivateSession = async () => {
   await player.pause();
+  clearInterval(updateViewerCountInterval);
   document.getElementById("loader").style.display = "none";
   console.log("stream in private session");
   document.getElementById("sendButton").disabled = true;
@@ -639,7 +683,6 @@ const handleStreamInPrivateSession = async () => {
   // document.getElementById("streamStatus").innerText = "";
   insertImage("./assets/private.png");
   // document.getElementById("viewPrivate").disabled = false;
-
   playing = false;
   paused = true;
 };
@@ -659,6 +702,7 @@ const handleStreamContinue = () => {
   document.getElementById("sendButton").disabled = false;
   // document.getElementById("textBox").disabled = false;
   document.getElementById("requestButton").disabled = false;
+
   playing = true;
   if (document.getElementById("statusImage")) {
     document.getElementById("statusImage").remove();
@@ -734,7 +778,7 @@ const requestPrivateStream = async () => {
   // return;
 };
 const start_view_private_stream = async () => {
-  deleteEmptyModal();
+  // deleteEmptyModal();
   start_private_stream_for_others();
 };
 const viewPrivateStream = async () => {

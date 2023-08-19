@@ -41,7 +41,7 @@
           <!-- New stream title container -->
           <div class="title-container">
             <h1 class="stream-title">New stream</h1>
-            <span class="viewers-count">6k watching</span>
+            <span class="viewers-count"></span>
           </div>
 
           <!-- image (video) container -->
@@ -424,16 +424,30 @@
                   </div>
                 </div>
                 <div id="private-stream-request-tab" class="tab-text">
-                  <h2>Private Stream Request</h2>
-                  <p id="private-stream-request-text"></p>
-                  <div id="requestButton-container">
-                    <button
-                      disabled
-                      id="requestButton"
-                      onclick="requestPrivateStream()"
-                    >
-                      Request Private Stream
-                    </button>
+                  <div id="private-stream-request">
+                    <h2>Private Stream Request</h2>
+                    <p id="private-stream-request-text"></p>
+                    <div id="requestButton-container">
+                      <button
+                        disabled
+                        id="requestButton"
+                        onclick="requestPrivateStream()"
+                      >
+                        Request Private Stream
+                      </button>
+                    </div>
+                  </div>
+                  <div style="display: none" id="private-stream-view">
+                    <h2>View Ongoing Private Stream</h2>
+                    <p id="private-stream-view-text"></p>
+                    <div id="viewButton-container">
+                      <button
+                        id="viewButton"
+                        onclick="start_view_private_stream()"
+                      >
+                        View Private Stream
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1031,6 +1045,8 @@
     <script src="./viewer.js"></script>
     <script src="stream.js"></script>
     <script src="./private-chat.js"></script>
+    <script src="./private-view-for-others.js"></script>
+    sc
     <script>
       join_channel();
     </script>

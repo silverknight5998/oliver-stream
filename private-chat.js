@@ -129,6 +129,8 @@ const handleChatInviteAccept = data => {
     // document.getElementById("requestButton").onclick = () => {
     //   document.getElementById("requestButton").disabled = true;
     // };
+  } else {
+    HideRequestShowView();
   }
 };
 const privateChatPopup = channel_id_private => {
@@ -256,6 +258,9 @@ const handlePrivateStreamError = err => {
   }, 2000);
 };
 const handlePrivateStreamPlaying = () => {
+  document
+    .getElementById("private")
+    .querySelector("span:first-child").textContent = "Go Public";
   document.getElementById("inputContainer").style.display = "none";
   document.getElementById("privateInputContainer").style.display = "flex";
   private_view_active = true;
@@ -287,7 +292,7 @@ const handlePrivateStreamPlaying = () => {
   }
   document.getElementById(
     "requestButton-container"
-  ).innerHTML = `<button id="endPrivateStream" onclick="handlePrivateStreamEnd()">End Private Stream</button>`;
+  ).innerHTML = `<button id="endPrivateStream" onclick="handlePrivateStreamEndOwn()">End Private Stream</button>`;
   console.log("Private Stream Playing");
   if (document.getElementById("statusPrivateImage")) {
     document.getElementById("statusPrivateImage").remove();
@@ -295,6 +300,10 @@ const handlePrivateStreamPlaying = () => {
   if (document.getElementById("statusImage")) {
     document.getElementById("statusImage").remove();
   }
+};
+const handlePrivateStreamEndOwn = async () => {
+  await handlePrivateStreamEnd();
+  HideRequestShowView();
 };
 const updateRemainingCredits = () => {
   if (ivs_credits < private_stream_cost_per_second) {
@@ -317,6 +326,10 @@ const updateRemainingCredits = () => {
 // };
 const handlePrivateStreamEnd = async (self = true) => {
   // refundRemainingTime();
+
+  document
+    .getElementById("private")
+    .querySelector("span:first-child").textContent = "Go Private";
   private_view_active = false;
   document.getElementById("inputContainer").style.display = "flex";
   document.getElementById("privateInputContainer").style.display = "none";

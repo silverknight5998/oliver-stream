@@ -16,10 +16,16 @@ toggleBtn.addEventListener("click", () => {
   console.log(wrapper.classList[1]);
   if (wrapper.classList[1] == "full-width") {
     wrapper.classList.remove("full-width");
-    const vHeight = document
+    let vHeight = document
       .getElementById("video-player")
       .getBoundingClientRect();
     console.log({ vHeight });
+    const ifPrivate = document.getElementById("private-video-player");
+    if (ifPrivate) {
+      vHeight = document
+        .getElementById("private-video-player")
+        .getBoundingClientRect();
+    }
     document.getElementById("video-wrapper-top").style.height =
       vHeight.height + "px";
     return;
@@ -314,11 +320,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   privateToggleButton.addEventListener("click", function () {
     if (privateToggleButtonText.textContent === "Go Private") {
-      privateToggleButtonText.textContent = "Go Public";
+      // privateToggleButtonText.textContent = "Go Public";
       privateToggleButton.id = "private";
     } else {
-      privateToggleButtonText.textContent = "Go Private";
-      privateToggleButton.id = "public";
+      // privateToggleButtonText.textContent = "Go Private";
+      privateToggleButton.id = "private";
     }
   });
 });
