@@ -90,6 +90,12 @@ player.addEventListener(PlayerState.PLAYING, function () {
   if (paused) return;
 
   console.log("Player State - PLAYING");
+  const vHeight = document
+    .getElementById("video-player")
+    .getBoundingClientRect();
+  console.log({ vHeight });
+  document.getElementById("video-wrapper-top").style.height =
+    vHeight.height + "px";
   // document.getElementById("viewPrivate").disabled = true;
   document.getElementById("sendButton").disabled = false;
   // document.getElementById("textBox").disabled = false;
@@ -250,7 +256,7 @@ const insertStreamPlayback = () => {
   const videoElement = document.createElement("video");
   videoElement.setAttribute("id", "video-player");
   videoElement.style =
-    "width: 100%;height: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);";
+    "width: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);";
   document.getElementById("video-section").appendChild(videoElement);
   if (IVSPlayer.isPlayerSupported) {
     player.attachHTMLVideoElement(document.getElementById("video-player"));
@@ -273,7 +279,7 @@ const retyInsertStreamPlayback = () => {
   const videoElement = document.createElement("video");
   videoElement.setAttribute("id", "video-player");
   videoElement.style =
-    "width: 100%;height: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);";
+    "width: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);";
   document.getElementById("video-section").appendChild(videoElement);
   if (IVSPlayer.isPlayerSupported) {
     player.attachHTMLVideoElement(document.getElementById("video-player"));

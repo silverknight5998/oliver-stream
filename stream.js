@@ -13,6 +13,19 @@ const wrapper = document.querySelector(".wrapper");
 
 toggleBtn.addEventListener("click", () => {
   // Toggle full-width / box-width mode on toggleIcon click
+  console.log(wrapper.classList[1]);
+  if (wrapper.classList[1] == "full-width") {
+    wrapper.classList.remove("full-width");
+    const vHeight = document
+      .getElementById("video-player")
+      .getBoundingClientRect();
+    console.log({ vHeight });
+    document.getElementById("video-wrapper-top").style.height =
+      vHeight.height + "px";
+    return;
+  } else {
+    document.getElementById("video-wrapper-top").style.height = "100%";
+  }
   wrapper.classList.toggle("full-width");
 
   // auto scroll to last message on toggleIcon click
