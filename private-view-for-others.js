@@ -17,16 +17,21 @@ const activate_chat_events = async () => {
   privateConnection.addEventListener("open", privateChatEventListener);
   attach_private_stream_for_others();
   privateViewerInterval = setInterval(() => {
-    if (ivs_credits < private_stream_cost_view_total) {
-      alert("You do not have enough credits to keep watching this stream.");
-      handle_private_stream_end_for_others();
-      clearInterval(privateViewerInterval);
-    }
     if (private_view_active && !waitingForFunding) {
       if (private_seconds_viewed % 30 == 0) {
+        if (ivs_credits < private_stream_cost_per_second) {
+          showPrettyModal(
+            "Low Credits",
+            "You don't have enough credits to continue watching this stream. Please buy more credits & View private stream again."
+          );
+          handle_private_stream_end_for_others();
+          clearInterval(privateViewerInterval);
+          return;
+        }
         console.log("deducting credits");
         private_cost_deducted += private_stream_cost_view_total;
         ivs_credits -= private_stream_cost_view_total;
+        updateCreditRelatedUI();
       }
       private_seconds_viewed++;
     }
@@ -55,12 +60,6 @@ const privateChatEventListener = () => {
     // }
   };
 };
-// const sendPrivateFunction = () => {
-//   const message = document.getElementById("privateTextBox").value;
-//   if (message == "") return;
-//   document.getElementById("privateTextBox").value = "";
-//   send_message(privateConnection, message);
-// };
 
 const attach_private_stream_for_others = () => {
   if (document.getElementById("statusImage")) {
@@ -146,6 +145,7 @@ const handle_private_stream_playing_for_others = () => {
 };
 const handle_private_stream_end_for_others = () => {
   //   refundRemainingTime();
+  document.getElementById("loader").style.display = "none";
   insertImage("./assets/private.png");
 
   document

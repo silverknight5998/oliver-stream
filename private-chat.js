@@ -111,24 +111,24 @@ const insertPrivateStreamImage = src => {
 };
 const handleChatInviteDecline = data => {
   if (data.Attributes.userToken == ClientToken) {
-    const modalContent =
-      document.getElementsByClassName("modal-content-full")[0];
-    modalContent.innerHTML = `<div style="display:flex;justify-content:center;min-height:80px;align-items:center;flex-direction:column;"><h2>Request Declined.</h2>
-    <button onclick="deleteEmptyModal();">Close</button>
-    </div>`;
+    showPrettyModal(
+      "Private Chat Request Declined",
+      "The streamer has declined your request to chat privately."
+    );
+    document.getElementById("requestButton-container").innerHTML = `
+    <button
+                        disabled
+                        id="requestButton"
+                        onclick="requestPrivateStream()"
+                      >
+                        Request Private Stream
+                      </button>
+  `;
   }
 };
 const handleChatInviteAccept = data => {
-  // deleteEmptyModal();
-
   if (data.Attributes.userToken == ClientToken) {
     privateChatPopup(data.Attributes.privateChannelLink);
-    // document.getElementById("requestButton").innerText =
-    //   "Request Accpeted! Open Private Chat";
-    // document.getElementById("requestButton").disabled = false;
-    // document.getElementById("requestButton").onclick = () => {
-    //   document.getElementById("requestButton").disabled = true;
-    // };
   } else {
     HideRequestShowView();
   }
@@ -197,7 +197,7 @@ const privateChatSocketListener = () => {
       }
       if (
         parseInt(data.Attributes.minutes) == 0 &&
-        parseInt(data.Attributes.seconds) < 10
+        parseInt(data.Attributes.seconds) < 20
       ) {
         if (warned) return;
         buyMoreCreditsModal();
@@ -407,7 +407,7 @@ const buyCredits = async () => {
   ivs_credits += creditOptionSelected;
   updateCreditRelatedUI();
   // document.getElementById("credits-left").innerText = ivs_credits;
-
+  warned = false;
   deletePrettyModal();
 };
 const buyMoreCreditsModal = async () => {
@@ -418,48 +418,53 @@ const buyMoreCreditsModal = async () => {
   //   channel_id_private,
   //   "more-credits-in-purchase"
   // );
-
-  const modalMarkup = `
-  <div  class="DuKSh EJVsl OtrSK cNGwx gsCWf" id="alert-popup" style="background-color: rgba(0, 170, 255, 0.58);">
-  <div class="GodhZ gsCWf EJVsl OtrSK CzomY">
-               <div class="ExGby HruDj">
-                   <div class="tSrNa gsCWf EJVsl zsSLy">
-                       <h1 class="USKIn">Low Credits!</h1>
-                       <div class="wcrwV gsCWf EJVsl">
-                           <div class="AYaOY TNIio UYvZu gsCWf EJVsl OtrSK DeYlt">
-                               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                   <g>
-                                       <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                   </g>
-                               </svg>
-                           </div>
-                       </div>
-                   </div>
-                   <div class="TImJU">
-                   <p>You are running low on credits. Please buy more credits to keep watching this private stream</p>
-                   <br>
-                   
-                   <fieldset id="group2">
-                     <input checked onclick="updateCreditSelection(this);"  type="radio" id="o1" value="50" name="credit-group">
-                     <label for="o1">50 Credits</label><br>
-                     <input onclick="updateCreditSelection(this);" type="radio" id="o2" value="100" name="credit-group">
-                     <label for="o2">100 Credits</label><br>
-                     <input onclick="updateCreditSelection(this);" type="radio" id="o3" value="200" name="credit-group">
-                     <label for="o3">200 Credits</label><br>
-                   </fieldset>
-                   <p id='extra-time'></p>
-                   <br>
-                   <br>
-                   <div style="display:flex;">
-                   <button class="AYaOY" onclick="buyCredits()">Buy Credits</button>
-                   <button style="margin-left:10px;" onclick="deletePrettyModal()" class="AYaOY">Cancel</button>
-                   </div>
-                   </div>
-               </div>
-           </div>
-       </div>
+  const prettyModal = document.createElement("div");
+  prettyModal.setAttribute("id", "alert-popup");
+  prettyModal.classList.add("DuKSh");
+  prettyModal.classList.add("EJVsl");
+  prettyModal.classList.add("OtrSK");
+  prettyModal.classList.add("cNGwx");
+  prettyModal.classList.add("gsCWf");
+  prettyModal.style.backgroundColor = "rgba(0, 170, 255, 0.58)";
+  prettyModal.innerHTML = `
+   <div class="GodhZ gsCWf EJVsl OtrSK CzomY">
+                <div class="ExGby HruDj">
+                    <div class="tSrNa gsCWf EJVsl zsSLy">
+                        <h1 class="USKIn">Low Credits!</h1>
+                        <div class="wcrwV gsCWf EJVsl">
+                            <div class="AYaOY TNIio UYvZu gsCWf EJVsl OtrSK DeYlt">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g>
+                                        <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="TImJU">
+                    <p>You are running low on credits. Please buy more credits to keep watching this private stream</p>
+                    <br>
+                    
+                    <fieldset id="group2">
+                      <input checked onclick="updateCreditSelection(this);"  type="radio" id="o1" value="50" name="credit-group">
+                      <label for="o1">50 Credits</label><br>
+                      <input onclick="updateCreditSelection(this);" type="radio" id="o2" value="100" name="credit-group">
+                      <label for="o2">100 Credits</label><br>
+                      <input onclick="updateCreditSelection(this);" type="radio" id="o3" value="200" name="credit-group">
+                      <label for="o3">200 Credits</label><br>
+                    </fieldset>
+                    <p id='extra-time'></p>
+                    <br>
+                    <br>
+                    <div style="display:flex;">
+                    <button class="AYaOY" onclick="buyCredits()">Buy Credits</button>
+                    <button style="margin-left:10px;" onclick="deletePrettyModal()" class="AYaOY">Cancel</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
   `;
-  document.body.innerHTML += modalMarkup;
+  document.getElementsByClassName("wrapper")[0].append(prettyModal);
 
   updateExtraTime();
 };

@@ -722,15 +722,23 @@ const deletePrettyModal = () => {
   }
 };
 const showPrettyModal = (title, content) => {
-  const modalMarkup = `
-  <div class="DuKSh EJVsl OtrSK cNGwx gsCWf" id="alert-popup" style="background-color: rgba(0, 170, 255, 0.58);">
+  const prettyModal = document.createElement("div");
+  prettyModal.setAttribute("id", "alert-popup");
+  prettyModal.classList.add("DuKSh");
+  prettyModal.classList.add("EJVsl");
+  prettyModal.classList.add("OtrSK");
+  prettyModal.classList.add("cNGwx");
+  prettyModal.classList.add("gsCWf");
+  prettyModal.style.backgroundColor = "rgba(0, 170, 255, 0.58)";
+  prettyModal.innerHTML = `
    <div class="GodhZ gsCWf EJVsl OtrSK CzomY">
                 <div class="ExGby HruDj">
                     <div class="tSrNa gsCWf EJVsl zsSLy">
                         <h1 class="USKIn">${title}</h1>
                         <div class="wcrwV gsCWf EJVsl">
                             <div class="AYaOY TNIio UYvZu gsCWf EJVsl OtrSK DeYlt">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg onclick="deletePrettyModal()"                                
+                                width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g>
                                         <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                                     </g>
@@ -739,7 +747,7 @@ const showPrettyModal = (title, content) => {
                         </div>
                     </div>
                     <div class="TImJU">
-                        ${content}
+                        <p>${content}</p>
                         <br>
                         <br>
                         <button
@@ -748,18 +756,15 @@ const showPrettyModal = (title, content) => {
                     </div>
                 </div>
             </div>
-        </div> 
   `;
-  document.getElementsByClassName("wrapper")[0].innerHTML += modalMarkup;
-  // document.body.innerHTML += modalMarkup;
+  document.getElementsByClassName("wrapper")[0].append(prettyModal);
 };
 const requestPrivateStream = async () => {
-  showPrettyModal(
-    "Error",
-    "You wallet doesn't have enough credits to request a private stream.<br/>Buy More Credits to request a private stream."
-  );
-  return;
   if (private_stream_cost_per_second > ivs_credits) {
+    showPrettyModal(
+      "Error",
+      "You wallet doesn't have enough credits to request a private stream.<br/>Buy More Credits to request a private stream."
+    );
     return;
   }
   document.getElementById("requestButton").remove();
