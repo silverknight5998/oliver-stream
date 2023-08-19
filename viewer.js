@@ -329,13 +329,20 @@ const handleRoomRulesUpdate = rules => {
     "room-rules"
   ).innerHTML += `<p style='margin:0;font-size:16px;'>${roomRules}</p>`;
 };
-const join_channel = async () => {
+const updateCreditRelatedUI = () => {
+  document.getElementById("private-stream-request-text").innerHTML = `
+  Available Credits: <b>${ivs_credits}</b><br>
+  Price Per 30 Seconds: <b>${private_stream_cost_per_second}</b> Credits<br>`;
+  document.getElementsByClassName(
+    "token-container"
+  )[0].innerText = `${ivs_credits} Tokens Credit | ${private_stream_cost_per_second} Tokens / 30sec`;
   document.getElementById("wallet_description").innerHTML = `
   Your Wallet contains have <b>${ivs_credits}</b> Credits right now.
   You can use these credits to view private streams.
   You can buy more credits by clicking on the button below.
   `;
-
+};
+const join_channel = async () => {
   const roomDetails = await get_room(
     region,
     secretAccessKey,
@@ -346,12 +353,7 @@ const join_channel = async () => {
   streamArn = roomDetails.tags.streamArn;
   private_stream_cost_per_second = parseFloat(roomDetails.tags["private-cost"]);
   private_stream_cost_view_total = parseFloat(roomDetails.tags["private-cost"]);
-  document.getElementById("private-stream-request-text").innerHTML = `
-  Available Credits: <b>${ivs_credits}</b><br>
-  Price Per 30 Seconds: <b>${private_stream_cost_per_second}</b> Credits<br>`;
-  document.getElementsByClassName(
-    "token-container"
-  )[0].innerText = `${ivs_credits} Tokens Credit | ${private_stream_cost_per_second} Tokens / 30sec`;
+  updateCreditRelatedUI();
   console.log({ streamArn });
   try {
     const privateStreamInfo = await get_stream_information(
@@ -523,6 +525,7 @@ const join_channel = async () => {
       }
       if (data.Type == "EVENT" && data.EventName == "private-price-update") {
         private_stream_cost_per_second = parseFloat(data.Attributes.newPrice);
+        updateCreditRelatedUI();
       }
       if (data.Type == "EVENT" && data.EventName == "goals-updated") {
         renderGoals();
@@ -562,16 +565,6 @@ const FetchAndRenderTags = async () => {
   );
   console.log({ roomDetails });
   roomDetails = roomDetails.channel;
-  // document.getElementById("streamTags").innerHTML = "Stream Tags:";
-  // for (let key in roomDetails.tags) {
-  //   if (roomDetails.tags[key] == "tag") {
-  //     // insertSingleTag(key);
-  //     // console.log(key);
-  //     document.getElementById("streamTags").innerHTML += key + "&nbsp;";
-
-  //     // document.getElementById("streamTags").style.visibility = "visible";
-  //   }
-  // }
 };
 const handleTagUpdate = async data => {
   document.getElementById("streamTags").innerHTML = "Stream Tags: ";
@@ -596,30 +589,6 @@ const observer = new IntersectionObserver(entries => {
     }
   });
 });
-// window.onresize = function (event) {
-//   document.getElementById(
-//     "spacer"
-//   ).style.height = `${videoWrapper.offsetHeight}px`;
-// };
-// document.addEventListener("scroll", () => {
-//   if (!playing) return;
-
-//   if (
-//     document.documentElement.scrollTop < 30 &&
-//     videoWrapper.style.position != "absolute"
-//   ) {
-//     videoWrapper.style.position = "absolute";
-//     videoWrapper.style.bottom = "";
-//     videoWrapper.style.margin = "";
-//     videoWrapper.style.right = "";
-//     videoWrapper.style.width = "";
-//     videoWrapper.style.height = "";
-//     document.getElementById(
-//       "spacer"
-//     ).style.height = `${videoWrapper.offsetHeight}px`;
-//   }
-// });
-// observer.observe(videoWrapper);
 const renderGoals = async () => {
   const goals = await get_goals(
     region, // Replace with your chatroom region
@@ -747,7 +716,52 @@ function credit_input_onchange(e) {
 const deleteEmptyModal = () => {
   document.getElementById("modal").remove();
 };
+const deletePrettyModal = () => {
+  if (document.getElementById("alert-popup")) {
+    document.getElementById("alert-popup").remove();
+  }
+};
+const showPrettyModal = (title, content) => {
+  const modalMarkup = `
+  <div class="DuKSh EJVsl OtrSK cNGwx gsCWf" id="alert-popup" style="background-color: rgba(0, 170, 255, 0.58);">
+   <div class="GodhZ gsCWf EJVsl OtrSK CzomY">
+                <div class="ExGby HruDj">
+                    <div class="tSrNa gsCWf EJVsl zsSLy">
+                        <h1 class="USKIn">${title}</h1>
+                        <div class="wcrwV gsCWf EJVsl">
+                            <div class="AYaOY TNIio UYvZu gsCWf EJVsl OtrSK DeYlt">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g>
+                                        <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="TImJU">
+                        ${content}
+                        <br>
+                        <br>
+                        <button
+                        onclick="deletePrettyModal()"
+                        class="AYaOY">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div> 
+  `;
+  document.getElementsByClassName("wrapper")[0].innerHTML += modalMarkup;
+  // document.body.innerHTML += modalMarkup;
+};
 const requestPrivateStream = async () => {
+  showPrettyModal(
+    "Error",
+    "You wallet doesn't have enough credits to request a private stream.<br/>Buy More Credits to request a private stream."
+  );
+  return;
+  if (private_stream_cost_per_second > ivs_credits) {
+    return;
+  }
   document.getElementById("requestButton").remove();
   // requestButton-container
   document.getElementById("requestButton-container").innerHTML = `
@@ -755,27 +769,6 @@ const requestPrivateStream = async () => {
   `;
   send_private_stream_request();
   return;
-  // createEmptyModal();
-  // const modalContent = document.getElementsByClassName("modal-content-full")[0];
-  // const newElement = document.createElement("div");
-  // newElement.style = "text-align:center";
-  // newElement.style.margin = "10px";
-  // newElement.innerHTML = `<h2>Request Private Stream</h2>
-  // Available Credits : ${ivs_credits}
-  // <br/>
-  // Price Per 30 Second: ${private_stream_cost_per_second} Credits
-  // <br/>`;
-  // if (ivs_credits < private_stream_cost_per_second) {
-  //   newElement.innerHTML += `<p style="color:red">You Don't Have Enough Credits To Start Private Stream</p>
-  //   <button id="send_private_stream_request" disabled onclick="send_private_stream_request()">Request</button>
-  //   `;
-  // } else {
-  //   newElement.innerHTML += `<button id="send_private_stream_request" onclick="send_private_stream_request()">Request</button>`;
-  // }
-  // newElement.innerHTML += `<button onclick="deleteEmptyModal()">Cancel</button>`;
-  // modalContent.append(newElement);
-
-  // return;
 };
 const start_view_private_stream = async () => {
   // deleteEmptyModal();

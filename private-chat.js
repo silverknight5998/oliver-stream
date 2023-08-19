@@ -187,25 +187,23 @@ const privateChatSocketListener = () => {
       //   retyInsertStreamPlayback();
       // }, 2000);
     }
-    // if (data.Type == "EVENT" && data.EventName == "remaining-credits") {
-    //   document.getElementById(
-    //     "remaining-credits"
-    //   ).innerText = `${data.Attributes.minutes}:${data.Attributes.seconds}`;
-    //   let deducted = parseInt(data.Attributes.deduct);
-    //   if (deducted > 0) {
-    //     updateRemainingCredits();
-    //   }
-    //   if (
-    //     parseInt(data.Attributes.minutes) == 0 &&
-    //     parseInt(data.Attributes.seconds) < 10
-    //   ) {
-    //     if (warned) return;
-    //     alert(
-    //       "Your private stream is about to end! Purchase more credits to continue."
-    //     );
-    //     warned = true;
-    //   }
-    // }
+    if (data.Type == "EVENT" && data.EventName == "remaining-credits") {
+      // document.getElementById(
+      //   "remaining-credits"
+      // ).innerText = `${data.Attributes.minutes}:${data.Attributes.seconds}`;
+      let deducted = parseInt(data.Attributes.deduct);
+      if (deducted > 0) {
+        updateRemainingCredits();
+      }
+      if (
+        parseInt(data.Attributes.minutes) == 0 &&
+        parseInt(data.Attributes.seconds) < 10
+      ) {
+        if (warned) return;
+        buyMoreCreditsModal();
+        warned = true;
+      }
+    }
   };
 };
 const sendPrivateFunction = () => {
@@ -311,6 +309,8 @@ const updateRemainingCredits = () => {
   } else {
     ivs_credits -= private_stream_cost_per_second;
   }
+  updateCreditRelatedUI();
+
   // document.getElementById("credits-left").innerText = ivs_credits;
 };
 // const refundRemainingTime = () => {
@@ -405,62 +405,93 @@ const buyCredits = async () => {
     }
   );
   ivs_credits += creditOptionSelected;
-  document.getElementById("credits-left").innerText = ivs_credits;
+  updateCreditRelatedUI();
+  // document.getElementById("credits-left").innerText = ivs_credits;
 
-  document.getElementById("double-modal").remove();
+  deletePrettyModal();
 };
 const buyMoreCreditsModal = async () => {
-  await send_event(
-    region,
-    secretAccessKey,
-    secretAccessId,
-    channel_id_private,
-    "more-credits-in-purchase"
-  );
-  const modalContainer = document.createElement("div");
-  modalContainer.setAttribute("id", "double-modal");
-  modalContainer.setAttribute("class", "double-modal");
-  const modalContent = document.createElement("div");
-  modalContent.setAttribute("class", "modal-content");
-  modalContainer.style.display = "block";
-  window.onclick = function (event) {
-    if (event.target == modalContainer) {
-      document.getElementById("double-modal").remove();
-    }
-  };
-  modalContainer.appendChild(modalContent);
-  modalContent.innerHTML = `
-      <span class="close" onclick="document.getElementById('double-modal').remove();">&times;</span>
-      <h1>Buy More Credits</h1>
-      <p>Buy more credits to continue watching private streams</p>
-      <fieldset id="group2">
-        <input checked onclick="updateCreditSelection(this);"  type="radio" id="o1" value="50" name="credit-group">
-        <label for="o1">50 Credits</label><br>
-        <input onclick="updateCreditSelection(this);" type="radio" id="o2" value="100" name="credit-group">
-        <label for="o2">100 Credits</label><br>
-        <input onclick="updateCreditSelection(this);" type="radio" id="o3" value="200" name="credit-group">
-        <label for="o3">200 Credits</label><br>
-      </fieldset>
-      <p id='extra-time'></p>
-      <button onclick="buyCredits()">Buy Credits</button>
+  // await send_event(
+  //   region,
+  //   secretAccessKey,
+  //   secretAccessId,
+  //   channel_id_private,
+  //   "more-credits-in-purchase"
+  // );
+
+  const modalMarkup = `
+  <div  class="DuKSh EJVsl OtrSK cNGwx gsCWf" id="alert-popup" style="background-color: rgba(0, 170, 255, 0.58);">
+  <div class="GodhZ gsCWf EJVsl OtrSK CzomY">
+               <div class="ExGby HruDj">
+                   <div class="tSrNa gsCWf EJVsl zsSLy">
+                       <h1 class="USKIn">Low Credits!</h1>
+                       <div class="wcrwV gsCWf EJVsl">
+                           <div class="AYaOY TNIio UYvZu gsCWf EJVsl OtrSK DeYlt">
+                               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                   <g>
+                                       <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                   </g>
+                               </svg>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="TImJU">
+                   <p>You are running low on credits. Please buy more credits to keep watching this private stream</p>
+                   <br>
+                   
+                   <fieldset id="group2">
+                     <input checked onclick="updateCreditSelection(this);"  type="radio" id="o1" value="50" name="credit-group">
+                     <label for="o1">50 Credits</label><br>
+                     <input onclick="updateCreditSelection(this);" type="radio" id="o2" value="100" name="credit-group">
+                     <label for="o2">100 Credits</label><br>
+                     <input onclick="updateCreditSelection(this);" type="radio" id="o3" value="200" name="credit-group">
+                     <label for="o3">200 Credits</label><br>
+                   </fieldset>
+                   <p id='extra-time'></p>
+                   <br>
+                   <br>
+                   <div style="display:flex;">
+                   <button class="AYaOY" onclick="buyCredits()">Buy Credits</button>
+                   <button style="margin-left:10px;" onclick="deletePrettyModal()" class="AYaOY">Cancel</button>
+                   </div>
+                   </div>
+               </div>
+           </div>
+       </div>
   `;
-  document.body.appendChild(modalContainer);
+  document.body.innerHTML += modalMarkup;
 
   updateExtraTime();
 };
 
 // ----
-// <div class="player-controls__inner" style="
-//  padding: 15px;
-//  top: 0;
-// ">
-//    <img src="https://svgshare.com/i/AaW.svg" style="
-//    width: auto;
-//    margin: 3px;
-//    ">
-//    <p style="
-//    color: white;
-//    margin: 0;
-//    padding: 0;
-//    ">Private</p>
-// </div>
+{
+  /* <div class="DuKSh EJVsl OtrSK cNGwx gsCWf" id="alert-popup" style="background-color: rgba(0, 170, 255, 0.58);">
+   <div class="GodhZ gsCWf EJVsl OtrSK CzomY">
+                <div class="ExGby HruDj">
+                    <div class="tSrNa gsCWf EJVsl zsSLy">
+                        <h1 class="USKIn">Alert!</h1>
+                        <div class="wcrwV gsCWf EJVsl">
+                            <div class="AYaOY TNIio UYvZu gsCWf EJVsl OtrSK DeYlt">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g>
+                                        <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="TImJU">
+                        Lorem ipsum dolor sit amet, consectetur adipisicing
+                        elit. Ab aliquam beatae blanditiis culpa, debitis
+                        deserunt harum incidunt nemo quae quaerat quasi
+                        quibusdam quidem, reiciendis, sapiente tempore velit
+                        voluptatum. Ipsa, repellat!
+                        <br>
+                        <br>
+                        <button class="AYaOY">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div> */
+}
