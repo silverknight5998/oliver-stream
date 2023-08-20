@@ -30,6 +30,8 @@ let private_cost_deducted = 0;
 let private_view_active = false;
 let roomRules = "";
 let updateViewerCountInterval;
+let viewerName = "basit";
+let total_donations = 0;
 player.addEventListener(PlayerEventType.AUDIO_BLOCKED, function () {
   setBtnMute();
 });
@@ -463,6 +465,15 @@ const join_channel = async () => {
     "<h4 style='margin:0;'>Room Rules</h4>";
   document.getElementById("room-rules").innerHTML = roomRules;
   //   await renderGoals();
+  updateTipRelatedUI();
+  const donations = await get_donations(
+    region,
+    secretAccessKey,
+    secretAccessId,
+    channel_arn_public
+  );
+  console.log({ donations });
+
   const { connection, chatClientToken, userId } = await open_channel(
     channel_arn,
     userChatName,
@@ -572,6 +583,93 @@ const handleTagUpdate = async data => {
     document.getElementById("streamTags").innerHTML += key + "&nbsp;";
   }
 };
+const tipStreamer = async tipAmount => {
+  deletePrettyModal();
+  await add_donation(
+    region,
+    secretAccessKey,
+    secretAccessId,
+    channel_arn_public,
+    tipAmount.toString(),
+    viewerName
+  );
+
+  showPrettyModal("Success!", "Your tip has been sent to the streamer.");
+  ivs_credits -= tipAmount;
+  updateCreditRelatedUI();
+  updateTipRelatedUI();
+};
+const updateTipRelatedUI = async () => {
+  const tips = await get_donations(
+    region,
+    secretAccessKey,
+    secretAccessId,
+    channel_arn_public
+  );
+  total_donations = 0;
+  let highest_tipper = "";
+  let highest_tip = 0;
+  let recent_tipper = tips[0].name.S;
+  tips.forEach(tip => {
+    total_donations += parseFloat(tip.donation.S);
+    if (parseFloat(tip.donation.S) > highest_tip) {
+      highest_tipper = tip.name.S;
+      highest_tip = parseFloat(tip.donation.S);
+    }
+  });
+  document.getElementById("latest-tipper-name-span").innerText = recent_tipper;
+  document.getElementById("highest-tipper-name-span").innerText =
+    highest_tipper;
+  console.log({ total_donations });
+  console.log({ tips });
+  renderGoals();
+};
+const handleTipSubmission = async buttonId => {
+  if (buttonId.id > ivs_credits) {
+    showPrettyModal(
+      "Error!",
+      "You don't have enough credits to tip this amount. Please purchase more credits."
+    );
+  } else {
+    const prettyModal = document.createElement("div");
+    prettyModal.setAttribute("id", "alert-popup");
+    prettyModal.classList.add("DuKSh");
+    prettyModal.classList.add("EJVsl");
+    prettyModal.classList.add("OtrSK");
+    prettyModal.classList.add("cNGwx");
+    prettyModal.classList.add("gsCWf");
+    prettyModal.style.backgroundColor = "rgba(0, 170, 255, 0.58)";
+    prettyModal.innerHTML = `
+   <div class="GodhZ gsCWf EJVsl OtrSK CzomY">
+                <div class="ExGby HruDj">
+                    <div class="tSrNa gsCWf EJVsl zsSLy">
+                        <h1 class="USKIn">Tip Confirmation</h1>
+                        <div class="wcrwV gsCWf EJVsl">
+                            <div class="AYaOY TNIio UYvZu gsCWf EJVsl OtrSK DeYlt">
+                                <svg onclick="deletePrettyModal()"                                
+                                width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g>
+                                        <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="TImJU">
+                        <p>Are you sure you want to donate ${buttonId.id} credits to this streamer?</p>
+                        <br>
+                        <br>
+                        <div style="display:flex;">
+                        <button class="AYaOY" onclick="tipStreamer(${buttonId.id})">Confirm</button>
+                        <button style="margin-left:10px;" onclick="deletePrettyModal()" class="AYaOY">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+  `;
+    document.getElementsByClassName("wrapper")[0].append(prettyModal);
+  }
+};
 const videoWrapper = document.getElementsByClassName("player-wrapper")[0];
 const observer = new IntersectionObserver(entries => {
   if (!playing) return;
@@ -596,6 +694,7 @@ const renderGoals = async () => {
     secretAccessId, // Replace with your secret key id
     "oliverdb"
   );
+  console.log({ goals });
   const sortedByAmount = goals.sort((a, b) => {
     return parseInt(b.amount.N) - parseInt(a.amount.N);
   });
@@ -603,12 +702,13 @@ const renderGoals = async () => {
   // goalContainer.innerHTML = "";
   // console.log({ sortedByAmount });
   for (let i = sortedByAmount.length - 1; i >= 0; i--) {
-    // console.log(sortedByAmount[i].completed.N);
+    console.log({ tst: sortedByAmount[i] });
+    if (parseInt(sortedByAmount[i].amount.N) <= total_donations) continue;
     document.getElementById("progress").style.display = "block";
-    updateProgressBar(0, sortedByAmount[i].completed.N);
     if (sortedByAmount[i].completed.N == "0") {
       document.getElementsByClassName("progress-status")[0].innerHTML = `
-        <span class="progress-percentage">0%</span>
+        <span class="progress-percentage">${total_donations}
+        </span>
                     /
                     <span class="progress-tokens">${sortedByAmount[i].amount.N}</span>
                     Tokens
@@ -617,12 +717,18 @@ const renderGoals = async () => {
       document.getElementsByClassName("goal-description")[0].innerText =
         "Goal: " + sortedByAmount[i].name.S;
 
-      // const newElement = document.createElement("div");
-      // newElement.style.margin = "10px";
-      // newElement.innerHTML = `<p>Current Goal: ${sortedByAmount[i].name.S}</p><p>Points: ${sortedByAmount[i].amount.N}</p>`;
-      // goalContainer.append(newElement);
+      updateProgressBar(total_donations, parseInt(sortedByAmount[i].amount.N));
       break;
+    } else {
+      document.getElementsByClassName("progress-status")[0].innerHTML = `
+        <span class="progress-percentage">Complete</span>`;
+
+      document.getElementsByClassName("goal-description")[0].innerText =
+        "Goal: " + sortedByAmount[i].name.S;
+
+      updateProgressBar(total_donations, parseInt(sortedByAmount[i].amount.N));
     }
+
     // else {
     //   const newElement = document.createElement("div");
     //   newElement.style.margin = "10px";

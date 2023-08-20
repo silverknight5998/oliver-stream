@@ -54,6 +54,7 @@ window.addEventListener("resize", checkScreenSize);
 
 function updateProgressBar(collectedAmount, totalAmount) {
   // Get progress percentage
+  console.log({ collectedAmount, totalAmount });
   const progressPercentage = (collectedAmount / totalAmount) * 100;
   const progressBars = document.querySelectorAll(".progress-bar");
 
