@@ -519,6 +519,10 @@ const join_channel = async () => {
       if (data.Type == "EVENT" && data.EventName == "room-rules-update") {
         handleRoomRulesUpdate(data.Attributes["room-rules"]);
       }
+      if (data.Type == "EVENT" && data.EventName == "tip-event") {
+        updateTipRelatedUI();
+      }
+
       if (data.Type == "EVENT" && data.EventName == "invite-declined") {
         handleChatInviteDecline(data);
       }
@@ -543,7 +547,7 @@ const join_channel = async () => {
         createMessage("|| Goals Updated By Streamer ||");
       }
       if (data.Type == "EVENT" && data.EventName == "updated-tags") {
-        handleTagUpdate(data);
+        // handleTagUpdate(data);
       }
       if (data.Type == "EVENT" && data.EventName == "playback-accepted") {
         retyInsertStreamPlayback();
@@ -596,6 +600,7 @@ const tipStreamer = async tipAmount => {
 
   showPrettyModal("Success!", "Your tip has been sent to the streamer.");
   ivs_credits -= tipAmount;
+  await send_event(region, secretAccessKey, secretAccessId, arn, "tip-event");
   updateCreditRelatedUI();
   updateTipRelatedUI();
 };
