@@ -1,8 +1,24 @@
 let privateViewerInterval;
 let waitingForFunding = false;
-
+const button = document.getElementById("follow-btn");
+const toast = document.querySelector(".toast");
+const clIcon = document.querySelector(".close");
+const progress = document.querySelector(".progress");
+let elapsed_time_interval_others;
+let elapsed_time_others = 0;
+let timer1, timer2;
 const start_private_stream_for_others = () => {
   activate_chat_events();
+  setTimeout(() => {
+    elapsed_time_interval_others = setInterval(() => {
+      elapsed_time_others++;
+      let mins = Math.floor(elapsed_time_others / 60);
+      let secs = elapsed_time_others % 60;
+      document.getElementById(
+        "elapsed-time"
+      ).innerText = `Elapsed Time: ${mins}:${secs > 9 ? secs : `0${secs}`}`;
+    }, 1000);
+  }, 2000);
 };
 
 const activate_chat_events = async () => {
@@ -81,7 +97,7 @@ const attach_private_stream_for_others = () => {
   const videoElement = document.createElement("video");
   videoElement.setAttribute("id", "private-video-player");
   videoElement.style =
-    "width: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);";
+    "width: 100%;height:100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);object-fit: cover;";
   document.getElementById("video-section").appendChild(videoElement);
   if (IVSPlayer.isPlayerSupported) {
     console.log("Private Player Mounted");
@@ -111,12 +127,12 @@ const handle_private_stream_playing_for_others = () => {
     .getElementById("private-video-player")
     .getBoundingClientRect();
 
-  document.getElementById("video-wrapper-top").style.height =
-    vHeight.height + "px";
+  // document.getElementById("video-wrapper-top").style.height =
+  //   vHeight.height + "px";
   privatePlayer.setMuted(true);
   document.getElementById(
     "viewButton-container"
-  ).innerHTML = `<button id="endPrivateStream" onclick="handle_private_stream_end_for_others()">End Private Stream</button>`;
+  ).innerHTML = `<button id="endPrivateStream" onclick="handle_private_stream_end_for_others()">Stop Watching Private Stream</button>`;
   document
     .getElementById("private")
     .querySelector("span:first-child").textContent = "Go Public";
@@ -126,6 +142,7 @@ const handle_private_stream_playing_for_others = () => {
   if (!document.getElementById("private-banner")) {
     document.getElementById("player-controls").innerHTML += `
       <div id="private-banner" class="player-controls__inner" style="
+      
        padding: 15px;
        top: 0;
       ">
@@ -145,6 +162,8 @@ const handle_private_stream_playing_for_others = () => {
 };
 const handle_private_stream_end_for_others = () => {
   //   refundRemainingTime();
+  clearInterval(elapsed_time_interval_others);
+  hideAllTabs();
   document.getElementById("loader").style.display = "none";
   insertImage("./assets/private.png");
 
@@ -182,3 +201,30 @@ const handle_private_stream_end_for_others = () => {
   `;
   // privatePlayer.delete();
 };
+const showToast = content => {
+  document.getElementById("toast-content").innerText = content;
+  button.click();
+};
+button.addEventListener("click", () => {
+  toast.classList.add("active");
+  progress.classList.add("active");
+
+  timer1 = setTimeout(() => {
+    toast.classList.remove("active");
+  }, 5000); //1s = 1000 milliseconds
+
+  timer2 = setTimeout(() => {
+    progress.classList.remove("active");
+  }, 5300);
+});
+
+clIcon.addEventListener("click", () => {
+  toast.classList.remove("active");
+
+  setTimeout(() => {
+    progress.classList.remove("active");
+  }, 300);
+
+  clearTimeout(timer1);
+  clearTimeout(timer2);
+});

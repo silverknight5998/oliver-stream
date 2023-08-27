@@ -127,7 +127,17 @@ body {
   border-bottom-left-radius: var(--radius);
   border-bottom-right-radius: var(--radius);
 }
-
+#private-player-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  transition: background 0.1s ease-in-out;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
 .player-controls__inner {
   height: var(--btn-size);
   position: absolute;
@@ -194,7 +204,13 @@ body {
 #mute {
   left: calc(25px + var(--btn-size));
 }
+#private-play {
+  left: 15px;
+}
 
+#private-mute {
+  left: calc(25px + var(--btn-size));
+}
 #settings {
   right: calc(15px + var(--btn-size));
 }
@@ -254,7 +270,8 @@ body {
 
 #video-player {
   width: 100%;
-  /* height: 100%; */
+  height: 100%;
+  object-fit: cover;
   position: absolute;
   top: 0;
   background: #000;
@@ -369,6 +386,99 @@ body {
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+.toast {
+  position: fixed;
+  top: 25px;
+  right: 30px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 15px 25px 15px 20px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  border-left: 6px solid #fb5ba2;
+  overflow: hidden;
+  transform: translateX(calc(100% + 30px));
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+}
+
+.toast.active {
+  transform: translateX(0%);
+}
+
+.toast .toast-content {
+  display: flex;
+  align-items: center;
+}
+
+.toast-content .check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  width: 35px;
+  background-color: #fb5ba2;
+  color: #fff;
+  font-size: 20px;
+  border-radius: 50%;
+}
+
+.toast-content .toast-message {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20px;
+}
+
+.toast-message .text {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+}
+
+.toast-message .text.text-t {
+  font-weight: 600;
+  color: #333;
+}
+
+.toast .close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  padding: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.toast .close:hover {
+  opacity: 1;
+}
+
+.toast .progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: #ddd;
+}
+
+.toast .progress:before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #fb5ba2;
+}
+
+.progress.active:before {
+  animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+  100% {
+    right: 100%;
   }
 }
 /* video::-webkit-media-controls-fullscreen-button { */

@@ -32,8 +32,14 @@ let roomRules = "";
 let updateViewerCountInterval;
 let viewerName = "basit";
 let total_donations = 0;
+const unMuteOnLoad = () => {
+  btnMute.click();
+  document.removeEventListener("click", unMuteOnLoad);
+};
 player.addEventListener(PlayerEventType.AUDIO_BLOCKED, function () {
   setBtnMute();
+  console.log("Player Event - AUDIO_BLOCKED");
+  document.addEventListener("click", unMuteOnLoad);
 });
 let setBtnPaused = function () {
   btnPlay.classList.remove("btn--play");
@@ -57,7 +63,7 @@ let setBtnUnmute = function () {
 playerOverlay.addEventListener(
   "mouseover",
   function (e) {
-    if (playing) {
+    if (playing || private_view_active) {
       playerOverlay.classList.add("player--hover");
     }
   },
@@ -88,6 +94,7 @@ player.addEventListener(PlayerState.IDLE, function () {
 
 player.addEventListener(PlayerState.PLAYING, function () {
   HideViewShowRequest();
+  renderGoals();
   clearInterval(updateViewerCountInterval);
   updateViewerCountInterval = setInterval(() => {
     get_stream_information(region, secretAccessKey, secretAccessId, streamArn)
@@ -100,12 +107,10 @@ player.addEventListener(PlayerState.PLAYING, function () {
         // console.log({ state: response.stream.state });
       })
       .catch(err => {
+        document.getElementsByClassName("viewers-count")[0].innerHTML = ``;
         console.log({ err });
-        document.getElementById(
-          "viewer-count"
-        ).innerHTML = `<p>Viewer Count (EXPERIMENTAL): 0</p>`;
       });
-  }, 5000);
+  }, 3000);
   playing = true;
   document.getElementById("overlay").style.backgroundColor = "transparent";
   document.getElementById("loader").style.display = "none";
@@ -116,8 +121,8 @@ player.addEventListener(PlayerState.PLAYING, function () {
     .getElementById("video-player")
     .getBoundingClientRect();
   console.log({ vHeight });
-  document.getElementById("video-wrapper-top").style.height =
-    vHeight.height + "px";
+  // document.getElementById("video-wrapper-top").style.height =
+  //   vHeight.height + "px";
   // document.getElementById("viewPrivate").disabled = true;
   document.getElementById("sendButton").disabled = false;
   // document.getElementById("textBox").disabled = false;
@@ -138,7 +143,8 @@ player.addEventListener(PlayerState.ENDED, function () {
   //   document.getElementById("video-player").remove();
   document.getElementById("sendButton").disabled = true;
   // document.getElementById("textBox").disabled = true;
-  document.getElementById("requestButton").disabled = true;
+  if (document.getElementById("requestButton"))
+    document.getElementById("requestButton").disabled = true;
   console.log("Player State - ENDED");
   // document.getElementById("streamStatus").innerText = "";
   insertImage("./assets/offline.jpeg");
@@ -354,7 +360,9 @@ const join_channel = async () => {
   console.log({ roomDetails });
   streamArn = roomDetails.tags.streamArn;
   private_stream_cost_per_second = parseFloat(roomDetails.tags["private-cost"]);
-  private_stream_cost_view_total = parseFloat(roomDetails.tags["private-cost"]);
+  private_stream_cost_view_total = parseFloat(
+    roomDetails.tags["private-view-cost"]
+  );
   updateCreditRelatedUI();
   console.log({ streamArn });
   try {
@@ -501,6 +509,9 @@ const join_channel = async () => {
       if (data.Type == "EVENT" && data.Attributes?.type == "notification") {
         alert(`NOTIFICATION:: ${data.EventName}`);
       }
+      if (data.Type == "EVENT" && data.EventName == "goal-completed") {
+        showToast(data.Attributes["data"]);
+      }
       if (data.Type == "EVENT" && data.EventName == "delete-channel") {
         handleStreamEnd();
       }
@@ -597,8 +608,8 @@ const tipStreamer = async tipAmount => {
     tipAmount.toString(),
     viewerName
   );
-
-  showPrettyModal("Success!", "Your tip has been sent to the streamer.");
+  showToast("Your tip has been sent to the streamer.");
+  // showPrettyModal("Success!", "Your tip has been sent to the streamer.");
   ivs_credits -= tipAmount;
   await send_event(region, secretAccessKey, secretAccessId, arn, "tip-event");
   updateCreditRelatedUI();
@@ -614,7 +625,6 @@ const updateTipRelatedUI = async () => {
   total_donations = 0;
   let highest_tipper = "";
   let highest_tip = 0;
-  let recent_tipper = tips[0].name.S;
   tips.forEach(tip => {
     total_donations += parseFloat(tip.donation.S);
     if (parseFloat(tip.donation.S) > highest_tip) {
@@ -622,12 +632,21 @@ const updateTipRelatedUI = async () => {
       highest_tip = parseFloat(tip.donation.S);
     }
   });
+  renderGoals();
+
+  if (tips.length == 0) {
+    document.getElementById("latest-tipper-name-span").innerText =
+      "No Tips Yet";
+    document.getElementById("highest-tipper-name-span").innerText =
+      "No Tips Yet";
+    return;
+  }
+  let recent_tipper = tips[0].name.S;
   document.getElementById("latest-tipper-name-span").innerText = recent_tipper;
   document.getElementById("highest-tipper-name-span").innerText =
     highest_tipper;
   console.log({ total_donations });
   console.log({ tips });
-  renderGoals();
 };
 const handleTipSubmission = async buttonId => {
   if (buttonId.id > ivs_credits) {
@@ -693,6 +712,12 @@ const observer = new IntersectionObserver(entries => {
   });
 });
 const renderGoals = async () => {
+  document.getElementById("progress").style.display = "none";
+  document.getElementsByClassName("progress-status")[0].innerHTML = ``;
+  document.getElementsByClassName("goal-description")[0].innerText = "";
+  document.getElementById(
+    "description-txt"
+  ).innerText = `Total Donations: ${total_donations}`;
   const goals = await get_goals(
     region, // Replace with your chatroom region
     secretAccessKey, // Replace with your secret access key
@@ -703,68 +728,62 @@ const renderGoals = async () => {
   const sortedByAmount = goals.sort((a, b) => {
     return parseInt(b.amount.N) - parseInt(a.amount.N);
   });
-  // const goalContainer = document.getElementById("goals");
-  // goalContainer.innerHTML = "";
-  // console.log({ sortedByAmount });
   for (let i = sortedByAmount.length - 1; i >= 0; i--) {
     console.log({ tst: sortedByAmount[i] });
-    if (parseInt(sortedByAmount[i].amount.N) <= total_donations) continue;
+    if (parseInt(sortedByAmount[i].amount.N) <= total_donations) {
+      document.getElementsByClassName("progress-status")[0].innerHTML = `
+        <span class="progress-percentage">Complete</span>`;
+      document.getElementsByClassName("goal-description")[0].innerText =
+        "Goal: " + sortedByAmount[i].name.S;
+      updateProgressBar(total_donations, parseInt(sortedByAmount[i].amount.N));
+      continue;
+    }
+
     document.getElementById("progress").style.display = "block";
     if (sortedByAmount[i].completed.N == "0") {
       document.getElementsByClassName("progress-status")[0].innerHTML = `
         <span class="progress-percentage">${total_donations}
-        </span>
-                    /
-                    <span class="progress-tokens">${sortedByAmount[i].amount.N}</span>
-                    Tokens
-        `;
-
+        </span>/<span class="progress-tokens">${sortedByAmount[i].amount.N}</span> Tokens`;
       document.getElementsByClassName("goal-description")[0].innerText =
         "Goal: " + sortedByAmount[i].name.S;
-
       updateProgressBar(total_donations, parseInt(sortedByAmount[i].amount.N));
       break;
     } else {
       document.getElementsByClassName("progress-status")[0].innerHTML = `
         <span class="progress-percentage">Complete</span>`;
-
       document.getElementsByClassName("goal-description")[0].innerText =
         "Goal: " + sortedByAmount[i].name.S;
-
       updateProgressBar(total_donations, parseInt(sortedByAmount[i].amount.N));
+      break;
     }
-
-    // else {
-    //   const newElement = document.createElement("div");
-    //   newElement.style.margin = "10px";
-    //   newElement.innerHTML = `<p>Completed Goal: ${sortedByAmount[i].name.S}</p><p>Points: ${sortedByAmount[i].amount.N}</p><br/>`;
-    //   goalContainer.append(newElement);
-    // }
   }
 };
 const HideRequestShowView = () => {
-  document.getElementById("private-stream-view-text").innerHTML = `
+  document.getElementById("private-stream-view-text-total").innerHTML = `
   Available Credits: <b>${ivs_credits}</b><br>
-  Price Per 30 Seconds: <b>${private_stream_cost_per_second}</b> Credits<br>`;
+  Price Per 30 Seconds: <b>${private_stream_cost_view_total}</b> Credits<br>`;
   document.getElementById("private-stream-request").style.display = "none";
   document.getElementById("private-stream-view").style.display = "block";
 };
 const HideViewShowRequest = () => {
+  document.getElementById("private-stream-request-text").innerHTML = `
+  Available Credits: <b>${ivs_credits}</b><br>
+  Price Per 30 Seconds: <b>${private_stream_cost_per_second}</b> Credits<br>`;
   document.getElementById("private-stream-request").style.display = "block";
   document.getElementById("private-stream-view").style.display = "none";
 };
 const handleStreamInPrivateSession = async () => {
-  await player.pause();
-  clearInterval(updateViewerCountInterval);
-  document.getElementById("loader").style.display = "none";
-  console.log("stream in private session");
-  document.getElementById("sendButton").disabled = true;
-  // document.getElementById("textBox").disabled = true;
-  // document.getElementById("streamStatus").innerText = "";
-  insertImage("./assets/private.png");
-  // document.getElementById("viewPrivate").disabled = false;
-  playing = false;
-  paused = true;
+  // await player.pause();
+  // clearInterval(updateViewerCountInterval);
+  // document.getElementById("loader").style.display = "none";
+  // console.log("stream in private session");
+  // document.getElementById("sendButton").disabled = true;
+  // // document.getElementById("textBox").disabled = true;
+  // // document.getElementById("streamStatus").innerText = "";
+  // insertImage("./assets/private.png");
+  // // document.getElementById("viewPrivate").disabled = false;
+  // playing = false;
+  // paused = true;
 };
 const handleStreamPaused = async () => {
   await player.pause();

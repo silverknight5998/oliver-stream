@@ -26,11 +26,11 @@ toggleBtn.addEventListener("click", () => {
         .getElementById("private-video-player")
         .getBoundingClientRect();
     }
-    document.getElementById("video-wrapper-top").style.height =
-      vHeight.height + "px";
+    // document.getElementById("video-wrapper-top").style.height =
+    //   vHeight.height + "px";
     return;
   } else {
-    document.getElementById("video-wrapper-top").style.height = "100%";
+    // document.getElementById("video-wrapper-top").style.height = "100%";
   }
   wrapper.classList.toggle("full-width");
 

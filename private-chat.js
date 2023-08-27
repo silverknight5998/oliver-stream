@@ -1,103 +1,58 @@
 let creditOptionSelected = 50;
 let warned = false;
 const privatePlayer = IVSPlayer.create();
+function hideAllTabs() {
+  const tabs = document.querySelectorAll(".chatbox-tab");
+  tabs.forEach(tab => {
+    tab.classList.remove("active");
+  });
+}
+let elapsed_time = 0;
+let elapsed_time_interval;
 let channel_id_private =
   "arn:aws:ivschat:us-east-1:701253760804:room/MjmBSFqWGelM";
-const privatePlayerMarkup = `
-<div class="player-wrapper">
-<div class="aspect-spacer"></div>
-<div id="private-video-section" class="pos-absolute full-width full-height top-0">
-  <div id="private-overlay">
-    <div id="private-loader" class="loader"></div>
-    <div id="private-player-controls">
-      <div class="player-controls__inner">
-        <button id="private-play" class="btn btn--icon btn--play">
-          <svg
-            class="icon icon--play"
-            xmlns="http://www.w3.org/2000/svg"
-            height="24"
-            viewbox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82z"
-            />
-          </svg>
-          <svg
-            class="icon icon--pause"
-            xmlns="http://www.w3.org/2000/svg"
-            height="24"
-            viewbox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M8 19c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2v10c0 1.1.9 2 2 2zm6-12v10c0 1.1.9 2 2 2s2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2z"
-            />
-          </svg>
-        </button>
-        <button id="private-mute" class="btn btn--icon btn--mute">
-          <svg
-            class="icon icon--volume_up"
-            xmlns="http://www.w3.org/2000/svg"
-            height="24"
-            viewbox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M3 10v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71V6.41c0-.89-1.08-1.34-1.71-.71L7 9H4c-.55 0-1 .45-1 1zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 4.45v.2c0 .38.25.71.6.85C17.18 6.53 19 9.06 19 12s-1.82 5.47-4.4 6.5c-.36.14-.6.47-.6.85v.2c0 .63.63 1.07 1.21.85C18.6 19.11 21 15.84 21 12s-2.4-7.11-5.79-8.4c-.58-.23-1.21.22-1.21.85z"
-            />
-          </svg>
-          <svg
-            class="icon icon--volume_off"
-            xmlns="http://www.w3.org/2000/svg"
-            height="24"
-            viewbox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M3.63 3.63c-.39.39-.39 1.02 0 1.41L7.29 8.7 7 9H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71v-4.17l4.18 4.18c-.49.37-1.02.68-1.6.91-.36.15-.58.53-.58.92 0 .72.73 1.18 1.39.91.8-.33 1.55-.77 2.22-1.31l1.34 1.34c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.05 3.63c-.39-.39-1.02-.39-1.42 0zM19 12c0 .82-.15 1.61-.41 2.34l1.53 1.53c.56-1.17.88-2.48.88-3.87 0-3.83-2.4-7.11-5.78-8.4-.59-.23-1.22.23-1.22.86v.19c0 .38.25.71.61.85C17.18 6.54 19 9.06 19 12zm-8.71-6.29l-.17.17L12 7.76V6.41c0-.89-1.08-1.33-1.71-.7zM16.5 12c0-1.77-1.02-3.29-2.5-4.03v1.79l2.48 2.48c.01-.08.02-.16.02-.24z"
-            />
-          </svg>
-        </button>
-        <button id="private-settings" class="btn btn--icon btn--settings-off">
-          <svg
-            class="icon icon--settings"
-            height="24"
-            viewbox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="m0 0h24v24h-24z" fill="none" />
-            <path
-              d="m19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65c-.03-.24-.24-.42-.49-.42h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64zm-7.43 2.52c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"
-            />
-          </svg>
-        </button>
-        <button
-          id="private-fullscreen"
-          class="btn btn--icon"
-          onclick="toggleFullScreen()"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="#fff"
-            class="bi bi-fullscreen"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div id="private-settings-menu"></div>
-  </div>
-</div>
-</div>
-`;
+
+let setPrivateBtnPaused = function () {
+  document.getElementById("private-play").classList.remove("btn--play");
+  document.getElementById("private-play").classList.add("btn--pause");
+};
+
+let setPrivateBtnPlay = function () {
+  document.getElementById("private-play").classList.add("btn--play");
+  document.getElementById("private-play").classList.remove("btn--pause");
+};
+
+let setPrivateBtnMute = function () {
+  document.getElementById("private-mute").classList.remove("btn--mute");
+  document.getElementById("private-mute").classList.add("btn--unmute");
+};
+
+let setPrivateBtnUnmute = function () {
+  document.getElementById("private-mute").classList.add("btn--mute");
+  document.getElementById("private-mute").classList.remove("btn--unmute");
+};
+const onPrivatePlayClick = () => {
+  if (document.getElementById("private-play").classList.contains("btn--play")) {
+    // change to pause
+    setPrivateBtnPaused();
+    privatePlayer.pause();
+  } else {
+    // change to play
+    setPrivateBtnPlay();
+    privatePlayer.play();
+  }
+};
+const onPrivateMuteclick = () => {
+  if (document.getElementById("private-mute").classList.contains("btn--mute")) {
+    setPrivateBtnMute();
+    privatePlayer.setMuted(1);
+  } else {
+    setPrivateBtnUnmute();
+    privatePlayer.setMuted(0);
+  }
+};
+// Mute/Unmute
+
 const insertPrivateStreamImage = src => {
   var element = document.getElementById("statusPrivateImage");
   if (typeof element != "undefined" && element != null) {
@@ -121,20 +76,54 @@ const handleChatInviteDecline = data => {
                         id="requestButton"
                         onclick="requestPrivateStream()"
                       >
-                        Request Private Stream
+                        Watch Private Stream
                       </button>
   `;
   }
 };
 const handleChatInviteAccept = data => {
   if (data.Attributes.userToken == ClientToken) {
+    setTimeout(() => {
+      elapsed_time_interval = setInterval(() => {
+        elapsed_time++;
+        let mins = Math.floor(elapsed_time / 60);
+        let secs = elapsed_time % 60;
+        document.getElementById(
+          "elapsed-time"
+        ).innerText = `Elapsed Time: ${mins}:${secs > 9 ? secs : `0${secs}`}`;
+      }, 1000);
+    }, 12000);
     privateChatPopup(data.Attributes.privateChannelLink);
+
+    document.getElementById("loader").style.zIndex = -1;
+    clearInterval(updateViewerCountInterval);
+    document.getElementById("loader").style.display = "none";
+    console.log("stream in private session");
+    document.getElementById("sendButton").disabled = true;
+    // document.getElementById("textBox").disabled = true;
+    // document.getElementById("streamStatus").innerText = "";
+
+    // document.getElementById("viewPrivate").disabled = false;
+    playing = false;
+    paused = true;
   } else {
+    player.pause();
+    clearInterval(updateViewerCountInterval);
+    document.getElementById("loader").style.display = "none";
+    console.log("stream in private session");
+    document.getElementById("sendButton").disabled = true;
+    // document.getElementById("textBox").disabled = true;
+    // document.getElementById("streamStatus").innerText = "";
+    insertImage("./assets/private.png");
+    // document.getElementById("viewPrivate").disabled = false;
+    playing = false;
+    paused = true;
     HideRequestShowView();
   }
+  document.getElementsByClassName("viewers-count")[0].innerHTML = ``;
 };
 const privateChatPopup = channel_id_private => {
-  insertPrivateStreamImage("./assets/waiting-for-streamer.png");
+  // insertPrivateStreamImage("./assets/waiting-for-streamer.png");
   privateChatInitalize(channel_id_private);
   updateRemainingCredits();
 };
@@ -150,6 +139,7 @@ const privateChatInitalize = async channel_id_private => {
   privateConnection = connection;
   privateConnection.addEventListener("open", privateChatSocketListener);
   attachPrivateIVSStream();
+  player.pause();
 };
 const privateChatSocketListener = () => {
   // document.getElementById("psendButton").disabled = false;
@@ -200,8 +190,8 @@ const privateChatSocketListener = () => {
         parseInt(data.Attributes.seconds) < 20
       ) {
         if (warned) return;
-        buyMoreCreditsModal();
         warned = true;
+        buyMoreCreditsModal();
       }
     }
   };
@@ -230,7 +220,7 @@ const attachPrivateIVSStream = () => {
   const videoElement = document.createElement("video");
   videoElement.setAttribute("id", "private-video-player");
   videoElement.style =
-    "width: 100%;height: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);";
+    "width: 100%;height: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);object-fit: cover;display:none;";
   document.getElementById("video-section").appendChild(videoElement);
   if (IVSPlayer.isPlayerSupported) {
     console.log("Private Player Mounted");
@@ -255,7 +245,27 @@ const handlePrivateStreamError = err => {
     privatePlayer.play();
   }, 2000);
 };
+let isAlreadyShown = false;
+const showPrivateStreamPopup = () => {
+  if (isAlreadyShown) return;
+  const chatboxTabContainer = document.querySelector(".tab-content-container");
+  chatboxTabContainer.style.display = "none";
+  isAlreadyShown = true;
+  document.getElementById("loader").style.zIndex = 9999;
+  showPrettyModal(
+    "Private Stream",
+    "You are now in private stream with the streamer!"
+  );
+  hideAllTabs();
+};
 const handlePrivateStreamPlaying = () => {
+  document.getElementsByClassName("viewers-count")[0].innerHTML = ``;
+
+  document.getElementById("private-player-controls").style.display = "block";
+  document.getElementById("player-controls").style.display = "none";
+
+  showPrivateStreamPopup();
+  document.getElementById("private-video-player").style.display = "block";
   document
     .getElementById("private")
     .querySelector("span:first-child").textContent = "Go Public";
@@ -267,10 +277,18 @@ const handlePrivateStreamPlaying = () => {
   document.getElementById("privateMessages").style.display = "flex";
 
   if (!document.getElementById("private-banner")) {
-    document.getElementById("player-controls").innerHTML += `
-      <div id="private-banner" class="player-controls__inner" style="
+    document.getElementById("private-player-controls").innerHTML += `
+      <div id="private-banner"  style="
+      height: var(--btn-size);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  padding: 0 10px 10px 10px;
        padding: 15px;
        top: 0;
+
       ">
          <img src="https://svgshare.com/i/AaW.svg" style="
          width: auto;
@@ -290,7 +308,7 @@ const handlePrivateStreamPlaying = () => {
   }
   document.getElementById(
     "requestButton-container"
-  ).innerHTML = `<button id="endPrivateStream" onclick="handlePrivateStreamEndOwn()">End Private Stream</button>`;
+  ).innerHTML = `<button id="endPrivateStream" onclick="handlePrivateStreamEndOwn()">Stop Watching Private Stream</button>`;
   console.log("Private Stream Playing");
   if (document.getElementById("statusPrivateImage")) {
     document.getElementById("statusPrivateImage").remove();
@@ -302,6 +320,7 @@ const handlePrivateStreamPlaying = () => {
 const handlePrivateStreamEndOwn = async () => {
   await handlePrivateStreamEnd();
   HideRequestShowView();
+  hideAllTabs();
 };
 const updateRemainingCredits = () => {
   if (ivs_credits < private_stream_cost_per_second) {
@@ -326,18 +345,30 @@ const updateRemainingCredits = () => {
 // };
 const handlePrivateStreamEnd = async (self = true) => {
   // refundRemainingTime();
+  clearInterval(elapsed_time_interval);
+  document.getElementById("elapsed-time").innerText = `Elapsed Time: 0:0`;
+  elapsed_time = 0;
+  isAlreadyShown = false;
+  document.getElementById("player-controls").style.display = "block";
 
+  document.getElementById("private-player-controls").style.display = "none";
   document
     .getElementById("private")
     .querySelector("span:first-child").textContent = "Go Private";
   private_view_active = false;
   document.getElementById("inputContainer").style.display = "flex";
   document.getElementById("privateInputContainer").style.display = "none";
-  insertImage("./assets/private.png");
+  if (!self) {
+    showPrettyModal(
+      "Private Stream Ended",
+      "The streamer has ended the private stream and you are now back to public stream."
+    );
+  }
   if (document.getElementById("private-banner")) {
     document.getElementById("private-banner").remove();
   }
   if (self) {
+    insertImage("./assets/private.png");
     await send_event(
       region,
       secretAccessKey,
@@ -370,7 +401,7 @@ const handlePrivateStreamEnd = async (self = true) => {
       id="requestButton"
       onclick="requestPrivateStream()"
     >
-      Request Private Stream
+    Watch Private Stream
     </button>
   `;
 };
@@ -407,7 +438,9 @@ const buyCredits = async () => {
   ivs_credits += creditOptionSelected;
   updateCreditRelatedUI();
   // document.getElementById("credits-left").innerText = ivs_credits;
-  warned = false;
+  setTimeout(() => {
+    warned = false;
+  }, 2000);
   deletePrettyModal();
 };
 const buyMoreCreditsModal = async () => {
