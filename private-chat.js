@@ -345,6 +345,7 @@ const updateRemainingCredits = () => {
 // };
 const handlePrivateStreamEnd = async (self = true) => {
   // refundRemainingTime();
+  deletePrettyModal();
   clearInterval(elapsed_time_interval);
   document.getElementById("elapsed-time").innerText = `Elapsed Time: 0:0`;
   elapsed_time = 0;
