@@ -1,7 +1,7 @@
 let creditOptionSelected = 50;
 let warned = false;
 const privatePlayer = IVSPlayer.create();
-function hideAllTabs() {
+function hideAllChatTabs() {
   const tabs = document.querySelectorAll(".chatbox-tab");
   tabs.forEach(tab => {
     tab.classList.remove("active");
@@ -11,6 +11,58 @@ let elapsed_time = 0;
 let elapsed_time_interval;
 let channel_id_private =
   "arn:aws:ivschat:us-east-1:701253760804:room/MjmBSFqWGelM";
+
+let privateCreateQualityOptions = function (obj, i) {
+  const btnSettings = document.getElementById("private-settings");
+  let settingsMenu = document.getElementById("private-settings-menu");
+  let q = document.createElement("a");
+  let qText = document.createTextNode(obj.name);
+  settingsMenu.appendChild(q);
+  q.classList.add("settings-menu-item");
+  q.appendChild(qText);
+
+  q.addEventListener("click", event => {
+    privatePlayer.setQuality(obj);
+    btnSettings.classList.remove("btn--settings-on");
+    btnSettings.classList.add("btn--settings-off");
+    // settingsMenu.classList.remove("open");
+    return false;
+  });
+};
+
+const onSettingsClick = () => {
+  const btnSettings = document.getElementById("private-settings");
+  let settingsMenu = document.getElementById("private-settings-menu");
+  let qualities = privatePlayer.getQualities();
+  let currentQuality = privatePlayer.getQuality();
+
+  // Empty Settings menu
+  while (settingsMenu.firstChild)
+    settingsMenu.removeChild(settingsMenu.firstChild);
+
+  if (btnSettings.classList.contains("btn--settings-off")) {
+    for (var i = 0; i < qualities.length; i++) {
+      privateCreateQualityOptions(qualities[i], i);
+    }
+    btnSettings.classList.remove("btn--settings-off");
+    btnSettings.classList.add("btn--settings-on");
+    settingsMenu.classList.add("open");
+  } else {
+    btnSettings.classList.remove("btn--settings-on");
+    btnSettings.classList.add("btn--settings-off");
+    settingsMenu.classList.remove("open");
+  }
+};
+// Close Settings menu if user clicks outside the player
+window.addEventListener("click", function (e) {
+  const btnSettings = document.getElementById("private-settings");
+  if (playerOverlay.contains(e.target)) {
+  } else {
+    btnSettings.classList.remove("btn--settings-on");
+    btnSettings.classList.add("btn--settings-off");
+    settingsMenu.classList.remove("open");
+  }
+});
 
 let setPrivateBtnPaused = function () {
   document.getElementById("private-play").classList.remove("btn--play");
@@ -256,7 +308,7 @@ const showPrivateStreamPopup = () => {
     "Private Stream",
     "You are now in private stream with the streamer!"
   );
-  hideAllTabs();
+  hideAllChatTabs();
 };
 const handlePrivateStreamPlaying = () => {
   document.getElementsByClassName("viewers-count")[0].innerHTML = ``;
@@ -320,7 +372,7 @@ const handlePrivateStreamPlaying = () => {
 const handlePrivateStreamEndOwn = async () => {
   await handlePrivateStreamEnd();
   HideRequestShowView();
-  hideAllTabs();
+  hideAllChatTabs();
 };
 const updateRemainingCredits = () => {
   if (ivs_credits < private_stream_cost_per_second) {

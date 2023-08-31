@@ -163,7 +163,7 @@ const handle_private_stream_playing_for_others = () => {
 const handle_private_stream_end_for_others = () => {
   //   refundRemainingTime();
   clearInterval(elapsed_time_interval_others);
-  hideAllTabs();
+  hideAllChatTabs();
   document.getElementById("loader").style.display = "none";
   insertImage("./assets/private.png");
 

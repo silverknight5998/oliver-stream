@@ -93,6 +93,7 @@ player.addEventListener(PlayerState.IDLE, function () {
 });
 
 player.addEventListener(PlayerState.PLAYING, function () {
+  showControlsAndHideOffline();
   HideViewShowRequest();
   renderGoals();
   clearInterval(updateViewerCountInterval);
@@ -138,7 +139,7 @@ player.addEventListener(PlayerState.ENDED, function () {
   clearInterval(updateViewerCountInterval);
   HideViewShowRequest();
   document.getElementById("loader").style.display = "none";
-
+  hideControlsAndShowOffline();
   paused = false;
   //   document.getElementById("video-player").remove();
   document.getElementById("sendButton").disabled = true;
@@ -255,6 +256,21 @@ window.addEventListener("click", function (e) {
     closeSettingsMenu();
   }
 });
+const hideControlsAndShowOffline = () => {
+  document.getElementById("chat-tab").style.display = "none";
+  document.getElementsByClassName("tab-buttons")[0].style.display = "none";
+  document.getElementsByClassName("page-content-container")[0].style.display =
+    "none";
+  document.getElementById("offline").style.display = "flex";
+};
+const showControlsAndHideOffline = () => {
+  document.getElementById("chat-tab").style.display = "block";
+  document.getElementsByClassName("tab-buttons")[0].style.display = "flex";
+  document.getElementsByClassName("page-content-container")[0].style.display =
+    "block";
+  document.getElementById("offline").style.display = "none";
+};
+
 const insertImage = src => {
   var element = document.getElementById("statusImage");
   if (typeof element != "undefined" && element != null) {
@@ -363,6 +379,8 @@ const join_channel = async () => {
   private_stream_cost_view_total = parseFloat(
     roomDetails.tags["private-view-cost"]
   );
+  document.getElementById("description-txt").innerText =
+    roomDetails.tags["description"] || "";
   updateCreditRelatedUI();
   console.log({ streamArn });
   try {
@@ -414,6 +432,7 @@ const join_channel = async () => {
         console.log("STREAM OFFLINE HERE?");
         insertImage("./assets/offline.jpeg");
         document.getElementById("loader").style.display = "none";
+        hideControlsAndShowOffline();
         playing = false;
       } else {
         await insertStreamPlayback();
@@ -444,6 +463,7 @@ const join_channel = async () => {
       insertImage("./assets/offline.jpeg");
       document.getElementById("loader").style.display = "none";
       playing = false;
+      hideControlsAndShowOffline();
     }
   }
   // ----- DANGER ZONE -----
@@ -509,8 +529,16 @@ const join_channel = async () => {
       if (data.Type == "EVENT" && data.Attributes?.type == "notification") {
         alert(`NOTIFICATION:: ${data.EventName}`);
       }
+      if (
+        data.Type == "EVENT" &&
+        data.EventName == "channel-description-update"
+      ) {
+        document.getElementById("description-txt").innerText =
+          data.Attributes["description"];
+      }
       if (data.Type == "EVENT" && data.EventName == "goal-completed") {
         showToast(data.Attributes["data"]);
+        createMessage(data.Attributes["data"]);
       }
       if (data.Type == "EVENT" && data.EventName == "delete-channel") {
         handleStreamEnd();
@@ -556,6 +584,7 @@ const join_channel = async () => {
       if (data.Type == "EVENT" && data.EventName == "goals-updated") {
         renderGoals();
         createMessage("|| Goals Updated By Streamer ||");
+        showToast("Goals Updated By Streamer");
       }
       if (data.Type == "EVENT" && data.EventName == "updated-tags") {
         // handleTagUpdate(data);
@@ -715,9 +744,9 @@ const renderGoals = async () => {
   document.getElementById("progress").style.display = "none";
   document.getElementsByClassName("progress-status")[0].innerHTML = ``;
   document.getElementsByClassName("goal-description")[0].innerText = "";
-  document.getElementById(
-    "description-txt"
-  ).innerText = `Total Donations: ${total_donations}`;
+  // document.getElementById(
+  //   "description-txt"
+  // ).innerText = `Total Donations: ${total_donations}`;
   const goals = await get_goals(
     region, // Replace with your chatroom region
     secretAccessKey, // Replace with your secret access key
@@ -940,7 +969,7 @@ const send_private_stream_request = async () => {
     "request-private-chat",
     {
       userToken: ClientToken,
-      userName: userName,
+      userName: viewerName,
       credits: ivs_credits.toString(),
     }
   );
