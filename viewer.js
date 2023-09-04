@@ -802,17 +802,17 @@ const HideViewShowRequest = () => {
   document.getElementById("private-stream-view").style.display = "none";
 };
 const handleStreamInPrivateSession = async () => {
-  // await player.pause();
-  // clearInterval(updateViewerCountInterval);
-  // document.getElementById("loader").style.display = "none";
+  await player.pause();
+  clearInterval(updateViewerCountInterval);
+  document.getElementById("loader").style.display = "none";
   // console.log("stream in private session");
   // document.getElementById("sendButton").disabled = true;
   // // document.getElementById("textBox").disabled = true;
   // // document.getElementById("streamStatus").innerText = "";
-  // insertImage("./assets/private.png");
+  insertImage("./assets/private.png");
   // // document.getElementById("viewPrivate").disabled = false;
-  // playing = false;
-  // paused = true;
+  playing = false;
+  paused = true;
 };
 const handleStreamPaused = async () => {
   await player.pause();
