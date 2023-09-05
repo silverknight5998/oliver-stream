@@ -201,30 +201,30 @@ const handle_private_stream_end_for_others = () => {
   `;
   // privatePlayer.delete();
 };
-const showToast = content => {
-  document.getElementById("toast-content").innerText = content;
-  button.click();
-};
-button.addEventListener("click", () => {
-  toast.classList.add("active");
-  progress.classList.add("active");
+// const showToast = content => {
+//   document.getElementById("toast-content").innerText = content;
+//   button.click();
+// };
+// button.addEventListener("click", () => {
+//   toast.classList.add("active");
+//   progress.classList.add("active");
 
-  timer1 = setTimeout(() => {
-    toast.classList.remove("active");
-  }, 5000); //1s = 1000 milliseconds
+//   timer1 = setTimeout(() => {
+//     toast.classList.remove("active");
+//   }, 5000); //1s = 1000 milliseconds
 
-  timer2 = setTimeout(() => {
-    progress.classList.remove("active");
-  }, 5300);
-});
+//   timer2 = setTimeout(() => {
+//     progress.classList.remove("active");
+//   }, 5300);
+// });
 
-clIcon.addEventListener("click", () => {
-  toast.classList.remove("active");
+// clIcon.addEventListener("click", () => {
+//   toast.classList.remove("active");
 
-  setTimeout(() => {
-    progress.classList.remove("active");
-  }, 300);
+//   setTimeout(() => {
+//     progress.classList.remove("active");
+//   }, 300);
 
-  clearTimeout(timer1);
-  clearTimeout(timer2);
-});
+//   clearTimeout(timer1);
+//   clearTimeout(timer2);
+// });

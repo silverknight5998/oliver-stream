@@ -32,6 +32,22 @@ let roomRules = "";
 let updateViewerCountInterval;
 let viewerName = "basit";
 let total_donations = 0;
+const toasts = new Toasts({
+  width: 400,
+  timing: "ease",
+  duration: "0.5s",
+  dimOld: false,
+  position: "top-right",
+});
+
+// Function to create and show a toast
+function showToast(title, content, style) {
+  toasts.push({
+    title: title,
+    content: content,
+    style: style,
+  });
+}
 const unMuteOnLoad = () => {
   btnMute.click();
   document.removeEventListener("click", unMuteOnLoad);
@@ -533,11 +549,16 @@ const join_channel = async () => {
         data.Type == "EVENT" &&
         data.EventName == "channel-description-update"
       ) {
+        showToast(
+          "Description Update",
+          data.Attributes["description"],
+          "success"
+        );
         document.getElementById("description-txt").innerText =
           data.Attributes["description"];
       }
       if (data.Type == "EVENT" && data.EventName == "goal-completed") {
-        showToast(data.Attributes["data"]);
+        showToast("Goal Update", data.Attributes["data"], "success");
         createMessage(data.Attributes["data"]);
       }
       if (data.Type == "EVENT" && data.EventName == "delete-channel") {
@@ -566,6 +587,7 @@ const join_channel = async () => {
         handleChatInviteDecline(data);
       }
       if (data.Type == "EVENT" && data.EventName == "channel-name-update") {
+        showToast("Channel Name Update", data.Attributes["name"], "success");
         document.getElementsByClassName("stream-title")[0].innerText =
           data.Attributes["name"];
       }
@@ -578,13 +600,30 @@ const join_channel = async () => {
         retyInsertStreamPlayback();
       }
       if (data.Type == "EVENT" && data.EventName == "private-price-update") {
+        if (data.Attributes.newPrice != private_stream_cost_per_second) {
+          showToast(
+            "Private Price Update",
+            `Private Price Updated to ${data.Attributes.newPrice} Credits Per 30 Seconds`,
+            "success"
+          );
+        }
+        if (private_stream_cost_view_total != data.Attributes.newPriceView) {
+          showToast(
+            "Private Price Update",
+            `Private Price Updated to ${data.Attributes.newPriceView} Credits For Viewing`,
+            "success"
+          );
+        }
         private_stream_cost_per_second = parseFloat(data.Attributes.newPrice);
+        private_stream_cost_view_total = parseFloat(
+          data.Attributes.newPriceView
+        );
         updateCreditRelatedUI();
       }
       if (data.Type == "EVENT" && data.EventName == "goals-updated") {
         renderGoals();
         createMessage("|| Goals Updated By Streamer ||");
-        showToast("Goals Updated By Streamer");
+        showToast("Goal Update", "Goals Updated By Streamer", "success");
       }
       if (data.Type == "EVENT" && data.EventName == "updated-tags") {
         // handleTagUpdate(data);
@@ -637,10 +676,20 @@ const tipStreamer = async tipAmount => {
     tipAmount.toString(),
     viewerName
   );
-  showToast("Your tip has been sent to the streamer.");
+  showToast("Tip", "Your tip has been sent to the streamer.", "success");
+
   // showPrettyModal("Success!", "Your tip has been sent to the streamer.");
   ivs_credits -= tipAmount;
-  await send_event(region, secretAccessKey, secretAccessId, arn, "tip-event");
+  await send_event_with_attributes(
+    region,
+    secretAccessKey,
+    secretAccessId,
+    arn,
+    "tip-event",
+    {
+      tipMessage: `${viewerName} tipped ${tipAmount} credits.`,
+    }
+  );
   updateCreditRelatedUI();
   updateTipRelatedUI();
 };
