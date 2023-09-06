@@ -578,6 +578,8 @@ const join_channel = async () => {
       }
       if (data.Type == "EVENT" && data.EventName == "room-rules-update") {
         handleRoomRulesUpdate(data.Attributes["room-rules"]);
+        showToast("Alert", `Room rules updated by the streamer`, "success");
+        createMessage(`Room rules updated by the streamer`);
       }
       if (data.Type == "EVENT" && data.EventName == "tip-event") {
         updateTipRelatedUI();
@@ -588,6 +590,7 @@ const join_channel = async () => {
       }
       if (data.Type == "EVENT" && data.EventName == "channel-name-update") {
         showToast("Channel Name Update", data.Attributes["name"], "success");
+        createMessage("Channel Name Updated");
         document.getElementsByClassName("stream-title")[0].innerText =
           data.Attributes["name"];
       }
@@ -606,12 +609,18 @@ const join_channel = async () => {
             `Private Price Updated to ${data.Attributes.newPrice} Credits Per 30 Seconds`,
             "success"
           );
+          createMessage(
+            `Private Price Updated to ${data.Attributes.newPrice} Credits Per 30 Seconds`
+          );
         }
         if (private_stream_cost_view_total != data.Attributes.newPriceView) {
           showToast(
             "Private Price Update",
             `Private Price Updated to ${data.Attributes.newPriceView} Credits For Viewing`,
             "success"
+          );
+          createMessage(
+            `Private Price Updated to ${data.Attributes.newPriceView} Credits For Viewing`
           );
         }
         private_stream_cost_per_second = parseFloat(data.Attributes.newPrice);
