@@ -568,7 +568,7 @@ const join_channel = async () => {
         handleStreamPaused();
       }
       if (data.Type == "EVENT" && data.EventName == "private-channel-start") {
-        handleStreamInPrivateSession();
+        // handleStreamInPrivateSession();
       }
       if (data.Type == "EVENT" && data.EventName == "continue-channel") {
         handleStreamContinue();
@@ -997,7 +997,7 @@ const viewPrivateStream = async () => {
   <br/>
   Cost Per 30 Seconds: ${private_stream_cost_view_total}
   <br/>
-  <button id="viewPrivateStreamButton" disabled onclick="start_view_private_stream()">Start</button>
+  <button id="viewPrivateStreamButton" disabled onclick="start_view_private_stream()">Join Private</button>
   <button onclick="deleteEmptyModal()">Cancel</button>
   `;
   modalContent.append(newElement);

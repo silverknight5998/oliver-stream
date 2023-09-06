@@ -7,10 +7,18 @@
       rel="stylesheet"
       href="https://fs.codelinden.com/wp-content/themes/hello-child/style.css"
     />
-    <link rel="stylesheet" href="./toasts.css" />
+
     <link rel="stylesheet" href="./video-player.css" />
     <link rel="stylesheet" href="stream.css" />
-    <link rel="stylesheet" href="./popup-styles.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://fs.codelinden.com/wp-content/plugins/fansocial/assets/css/popup-styles.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://drougnov.github.io/dashobard-copy/toasts/toasts.css"
+    />
     <!-- poppins font -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -339,7 +347,11 @@
         </div>
 
         <!-- right-section -->
-        <div class="right-container chat-container tab-menu" id="chat-tab">
+        <div
+          style="display: none"
+          class="right-container chat-container tab-menu"
+          id="chat-tab"
+        >
           <!-- chatbox-container -->
           <div class="chatbox-container">
             <!-- message-navbar -->
@@ -570,7 +582,7 @@
                         id="viewButton"
                         onclick="start_view_private_stream()"
                       >
-                        View Private Stream
+                        Join Private
                       </button>
                     </div>
                   </div>
@@ -758,7 +770,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            display: none;
+
             font-family: Poppins, sans-serif !important;
           "
         >
@@ -1191,8 +1203,10 @@
       <div class="progress"></div>
     </div> -->
     <!-- single menu dropdown script -->
-    <script src="./toasts-script.js"></script>
+    <script src="https://drougnov.github.io/dashobard-copy/toasts/toasts.js"></script>
+    <script src="https://fs.codelinden.com/wp-content/plugins/fansocial/assets/js/popup-scripts.js"></script>
     <script src="./aws/main.js"></script>
+
     <script src="https://player.live-video.net/1.18.0/amazon-ivs-player.min.js"></script>
     <script src="single-menu-dropdown.js"></script>
     <script src="./viewer.js"></script>
