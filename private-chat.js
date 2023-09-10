@@ -166,7 +166,7 @@ const handleChatInviteAccept = data => {
     document.getElementById("sendButton").disabled = true;
     // document.getElementById("textBox").disabled = true;
     // document.getElementById("streamStatus").innerText = "";
-    insertImage("./assets/private.png");
+    insertImage(placeholderUrl + "private.png");
     // document.getElementById("viewPrivate").disabled = false;
     playing = false;
     paused = true;
@@ -421,7 +421,7 @@ const handlePrivateStreamEnd = async (self = true) => {
     document.getElementById("private-banner").remove();
   }
   if (self) {
-    insertImage("./assets/private.png");
+    insertImage(placeholderUrl + "private.png");
     await send_event(
       region,
       secretAccessKey,

@@ -7,6 +7,8 @@ let channelConnection;
 let privateConnection;
 let channels;
 let arn, ClientToken, userName, streamArn;
+const placeholderUrl =
+  "https://fs.codelinden.com/wp-content/plugins/fansocial/assets/img/placeholder/";
 const player = IVSPlayer.create();
 const PlayerState = IVSPlayer.PlayerState;
 const PlayerEventType = IVSPlayer.PlayerEventType;
@@ -164,7 +166,7 @@ player.addEventListener(PlayerState.ENDED, function () {
     document.getElementById("requestButton").disabled = true;
   console.log("Player State - ENDED");
   // document.getElementById("streamStatus").innerText = "";
-  insertImage("./assets/offline.jpeg");
+  insertImage(placeholderUrl + "offline.jpeg");
   playing = false;
 });
 player.addEventListener(PlayerEventType.ERROR, async function (err) {
@@ -184,7 +186,7 @@ player.addEventListener(PlayerEventType.ERROR, async function (err) {
   // console.warn("Something Went  - ERROR:", err);
   //   document.getElementById("streamStatus").innerText = "";
   //   vplayer.remove();
-  insertImage("./assets/offline.jpeg");
+  insertImage(placeholderUrl + "offline.jpeg");
   document.getElementById("loader").style.display = "none";
 
   playing = false;
@@ -306,7 +308,7 @@ const handleStreamEnd = () => {
     document.getElementById("requestButton").disabled = true;
     console.log("Player State - ENDED");
     document.getElementById("streamStatus").innerText = "";
-    insertImage("./assets/offline.jpeg");
+    insertImage(placeholderUrl + "offline.jpeg");
     playing = false;
     paused = false;
   }
@@ -446,7 +448,7 @@ const join_channel = async () => {
       console.log({ streamInfo });
       if (streamInfo.stream.health == "STARVING") {
         console.log("STREAM OFFLINE HERE?");
-        insertImage("./assets/offline.jpeg");
+        insertImage(placeholderUrl + "offline.jpeg");
         document.getElementById("loader").style.display = "none";
         hideControlsAndShowOffline();
         playing = false;
@@ -476,7 +478,7 @@ const join_channel = async () => {
     } catch (err) {
       console.log({ err });
       console.log("STREAM OFFLINE HERE actual");
-      insertImage("./assets/offline.jpeg");
+      insertImage(placeholderUrl + "offline.jpeg");
       document.getElementById("loader").style.display = "none";
       playing = false;
       hideControlsAndShowOffline();
@@ -867,7 +869,7 @@ const handleStreamInPrivateSession = async () => {
   // document.getElementById("sendButton").disabled = true;
   // // document.getElementById("textBox").disabled = true;
   // // document.getElementById("streamStatus").innerText = "";
-  insertImage("./assets/private.png");
+  insertImage(placeholderUrl + "private.png");
   // // document.getElementById("viewPrivate").disabled = false;
   playing = false;
   paused = true;
@@ -880,7 +882,7 @@ const handleStreamPaused = async () => {
   // document.getElementById("textBox").disabled = true;
   // document.getElementById("streamStatus").innerText = "";
   // document.getElementById("video-player").remove();
-  insertImage("./assets/pause.jpeg");
+  insertImage(placeholderUrl + "pause.jpeg");
   playing = false;
   paused = true;
 };

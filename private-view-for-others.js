@@ -165,7 +165,7 @@ const handle_private_stream_end_for_others = () => {
   clearInterval(elapsed_time_interval_others);
   hideAllChatTabs();
   document.getElementById("loader").style.display = "none";
-  insertImage("./assets/private.png");
+  insertImage(placeholderUrl + "private.png");
 
   document
     .getElementById("private")
