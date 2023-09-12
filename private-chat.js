@@ -111,7 +111,7 @@ const insertPrivateStreamImage = src => {
     element.remove();
   }
   const imageElement = document.createElement("img");
-  imageElement.style = "width:100%;height:100%;position:absolute;z-index:8;";
+  imageElement.style = "width:100%;height:100%;position:absolute;z-index:10;";
   imageElement.setAttribute("id", "statusPrivateImage");
   imageElement.src = src;
   document.getElementById("video-section").appendChild(imageElement);
@@ -145,6 +145,11 @@ const handleChatInviteAccept = data => {
         ).innerText = `Elapsed Time: ${mins}:${secs > 9 ? secs : `0${secs}`}`;
       }, 1000);
     }, 12000);
+    insertPrivateStreamImage("./assets/waiting-for-streamer.png");
+    showPrettyModal(
+      "Private Stream",
+      "Your request for private stream has been accepted! Stream will start playing in few seconds."
+    );
     privateChatPopup(data.Attributes.privateChannelLink);
 
     document.getElementById("loader").style.zIndex = -1;
@@ -272,7 +277,7 @@ const attachPrivateIVSStream = () => {
   const videoElement = document.createElement("video");
   videoElement.setAttribute("id", "private-video-player");
   videoElement.style =
-    "width: 100%;height: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);object-fit: cover;display:none;";
+    "width: 100%;height: 100%;position: absolute;top: 0;background: #000;border-radius: var(--radius);object-fit: cover;display:none;z-index: 9;";
   document.getElementById("video-section").appendChild(videoElement);
   if (IVSPlayer.isPlayerSupported) {
     console.log("Private Player Mounted");
@@ -304,10 +309,7 @@ const showPrivateStreamPopup = () => {
   chatboxTabContainer.style.display = "none";
   isAlreadyShown = true;
   document.getElementById("loader").style.zIndex = 9999;
-  showPrettyModal(
-    "Private Stream",
-    "You are now in private stream with the streamer!"
-  );
+
   hideAllChatTabs();
 };
 const handlePrivateStreamPlaying = () => {
@@ -396,14 +398,21 @@ const updateRemainingCredits = () => {
 //   ivs_credits += refundAmount;
 // };
 const handlePrivateStreamEnd = async (self = true) => {
-  // refundRemainingTime();
+  if (self == false) {
+    document.getElementById("private-video-player").remove();
+    insertPrivateStreamImage("./assets/waiting-for-streamer.png");
+    showPrettyModal(
+      "Private Stream Ended",
+      "The streamer has ended the private stream and public stream is loading."
+    );
+    return;
+  }
   deletePrettyModal();
   clearInterval(elapsed_time_interval);
   document.getElementById("elapsed-time").innerText = `Elapsed Time: 0:0`;
   elapsed_time = 0;
   isAlreadyShown = false;
   document.getElementById("player-controls").style.display = "block";
-
   document.getElementById("private-player-controls").style.display = "none";
   document
     .getElementById("private")
@@ -431,12 +440,9 @@ const handlePrivateStreamEnd = async (self = true) => {
     );
   }
   warned = false;
-  // document.getElementById("modal").remove();
   document.getElementById("private-video-player").remove();
   privateConnection.close();
   privateConnection.removeEventListener("open", privateChatSocketListener);
-  // document.getElementById("requestButton").innerText = "Request Private Chat";
-  // document.getElementById("requestButton").onclick = requestPrivateStream;
   privatePlayer.removeEventListener(
     IVSPlayer.PlayerEventType.ERROR,
     handlePrivateStreamError
@@ -448,7 +454,6 @@ const handlePrivateStreamEnd = async (self = true) => {
   document.getElementById("messages").style.display = "flex";
   document.getElementById("privateMessages").style.display = "none";
   console.log("Private Player Unmounted");
-  // privatePlayer.delete();
   document.getElementById("requestButton-container").innerHTML = `
   <button
       id="requestButton"

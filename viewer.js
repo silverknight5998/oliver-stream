@@ -109,8 +109,57 @@ player.addEventListener(PlayerState.IDLE, function () {
   //   document.getElementById("statusImage").remove();
   // }
 });
+const endPrivateIfActive = async () => {
+  deletePrettyModal();
+  clearInterval(elapsed_time_interval);
+  document.getElementById("elapsed-time").innerText = `Elapsed Time: 0:0`;
+  elapsed_time = 0;
+  isAlreadyShown = false;
+  document.getElementById("player-controls").style.display = "block";
 
+  document.getElementById("private-player-controls").style.display = "none";
+  document
+    .getElementById("private")
+    .querySelector("span:first-child").textContent = "Go Private";
+  private_view_active = false;
+  document.getElementById("inputContainer").style.display = "flex";
+  document.getElementById("privateInputContainer").style.display = "none";
+
+  if (document.getElementById("private-banner")) {
+    document.getElementById("private-banner").remove();
+  }
+  var element = document.getElementById("statusPrivateImage");
+  if (typeof element != "undefined" && element != null) {
+    element.remove();
+  }
+  warned = false;
+  privateConnection.close();
+  privateConnection.removeEventListener("open", privateChatSocketListener);
+  privatePlayer.removeEventListener(
+    IVSPlayer.PlayerEventType.ERROR,
+    handlePrivateStreamError
+  );
+  privatePlayer.removeEventListener(
+    IVSPlayer.PlayerState.PLAYING,
+    handlePrivateStreamPlaying
+  );
+  document.getElementById("messages").style.display = "flex";
+  document.getElementById("privateMessages").style.display = "none";
+  console.log("Private Player Unmounted");
+  document.getElementById("requestButton-container").innerHTML = `
+  <button
+      id="requestButton"
+      onclick="requestPrivateStream()"
+    >
+    Watch Private Stream
+    </button>
+  `;
+};
 player.addEventListener(PlayerState.PLAYING, function () {
+  console.log("called");
+  if (private_view_active) {
+    endPrivateIfActive();
+  }
   showControlsAndHideOffline();
   HideViewShowRequest();
   renderGoals();
